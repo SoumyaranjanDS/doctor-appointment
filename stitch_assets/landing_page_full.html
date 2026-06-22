@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Medicare Connect - Find Trusted Doctors</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#e9f7ed",
+                        "on-primary-fixed-variant": "#07513b",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#deece2",
+                        "surface-bright": "#effdf3",
+                        "on-tertiary-container": "#d3e5dc",
+                        "surface-tint": "#296952",
+                        "surface-variant": "#d8e6dc",
+                        "surface-container-highest": "#d8e6dc",
+                        "primary-container": "#2f6f57",
+                        "on-secondary-fixed": "#002115",
+                        "tertiary": "#3f4f49",
+                        "on-background": "#121e18",
+                        "on-surface-variant": "#404944",
+                        "surface-container": "#e3f1e8",
+                        "inverse-surface": "#27332d",
+                        "secondary-fixed": "#a3f3ce",
+                        "background": "#effdf3",
+                        "outline-variant": "#bfc9c2",
+                        "inverse-primary": "#93d4b7",
+                        "secondary-container": "#a3f3ce",
+                        "on-tertiary-fixed-variant": "#3a4a44",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#88d6b3",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#0f1e19",
+                        "on-secondary-container": "#1e7154",
+                        "on-primary-fixed": "#002116",
+                        "surface-dim": "#cfddd4",
+                        "secondary": "#156b4e",
+                        "primary-fixed": "#aef0d2",
+                        "inverse-on-surface": "#e6f4eb",
+                        "on-secondary-fixed-variant": "#005139",
+                        "on-primary-container": "#adefd1",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d5e7de",
+                        "tertiary-container": "#576760",
+                        "outline": "#707973",
+                        "surface": "#effdf3",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#93d4b7",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#b9cbc2",
+                        "primary": "#105640",
+                        "on-surface": "#121e18",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin_mobile": "16px",
+                        "margin_desktop": "48px",
+                        "md": "16px",
+                        "xxl": "64px",
+                        "sm": "8px",
+                        "xl": "40px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "caption": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- 1. TopNavBar -->
+<header class="bg-surface-container-lowest fixed top-0 w-full z-50 border-b border-outline-variant flat no shadows">
+<div class="flex justify-between items-center h-16 max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary filled text-2xl" data-icon="medical_services">medical_services</span>
+<span class="font-headline-md text-headline-md text-primary">Medicare Connect</span>
+</div>
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md cursor-pointer transition-all duration-200 active:scale-95" href="#">Find Doctors</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">Clinics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">Specialities</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">How It Works</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">For Doctors</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">Contact</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer" href="#">Login</a>
+</nav>
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-lg py-sm rounded-full hover:bg-primary hover:text-white transition-colors cursor-pointer active:scale-95 hidden md:block">
+                Book Appointment
+            </button>
+<button class="md:hidden text-primary p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</header>
+<main class="pt-[64px]">
+<!-- 2. Hero + Doctor Search -->
+<section class="max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop py-xxl border-b border-outline-variant">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-xxl items-center">
+<div class="space-y-xl">
+<div class="space-y-sm">
+<span class="inline-flex items-center gap-xs px-sm py-xs bg-surface-container-low text-primary font-caption text-caption rounded-full">
+<span class="material-symbols-outlined filled text-[16px]" data-icon="verified">verified</span> Over 10,000 Verified Specialists
+                        </span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface tracking-tight leading-tight">
+                            Find Trusted Doctors.<br/>
+<span class="text-primary">Book Care Without Waiting.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mt-md">
+                            Connect with top-rated medical professionals, book instant appointments, and manage your health records seamlessly. Experience modern healthcare tailored to your schedule.
+                        </p>
+</div>
+<!-- Search Strip -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-full p-2 flex flex-col md:flex-row items-center relative z-10 max-w-2xl">
+<div class="flex-1 px-4 py-2 border-b md:border-b-0 md:border-r border-outline-variant w-full md:w-auto flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md placeholder:text-outline p-0" placeholder="Doctor or Speciality" type="text"/>
+</div>
+<div class="flex-1 px-4 py-2 border-b md:border-b-0 md:border-r border-outline-variant w-full md:w-auto flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline" data-icon="location_on">location_on</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md placeholder:text-outline p-0" placeholder="Location" type="text"/>
+</div>
+<button class="bg-primary-container text-white hover:bg-primary transition-colors rounded-full px-lg py-2 font-label-md text-label-md w-full md:w-auto mt-2 md:mt-0 flex items-center justify-center gap-xs">
+                            Search
+                        </button>
+</div>
+</div>
+<div class="relative h-[500px] w-full hidden md:block rounded-3xl overflow-hidden bg-surface-container-low border border-outline-variant">
+<img class="object-cover w-full h-full object-top mix-blend-multiply opacity-90" data-alt="A professional male doctor in his 40s wearing a crisp white lab coat over a light blue shirt, holding a digital tablet. He is smiling warmly in a modern, brightly lit clinical setting with clean white walls and subtle greenery. High quality editorial photography, light and airy aesthetic, shallow depth of field, focused on trust and competence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKTG1RgHR1vkAYCaezq-VsXeDAJRHwpgnX6ySs2RbQYQ4hoSNjC6U5F_6-T_7ETbTEtwrLeZKQjdtb9EGrjiG420ufZV3Hp_QEZNecydSzN6JtPyIrD9rJm_JiXCM6na7TAw_OKyIr2Y45Eyo6T9deqTKg9j5ZyADfZFuws3J04E3S3kLtN3aNUYMm7HfAq3roY3YgMXaU3D_z_QO6Vo7Fn_lnlWhBT-0MRvVPzN6tmPA9T7dM3wutrZ6zLoI0Pf_Rj46m8yQaWd8"/>
+</div>
+</div>
+</section>
+<!-- 3. Trust Indicators -->
+<section class="border-b border-outline-variant bg-surface-container-lowest">
+<div class="max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop py-lg">
+<div class="flex flex-wrap justify-center md:justify-between items-center gap-lg">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="verified_user">verified_user</span>
+<span class="font-caption text-caption uppercase tracking-wider">Verified Doctors</span>
+</div>
+<div class="hidden md:block w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="lock">lock</span>
+<span class="font-caption text-caption uppercase tracking-wider">Secure Records</span>
+</div>
+<div class="hidden md:block w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="video_camera_front">video_camera_front</span>
+<span class="font-caption text-caption uppercase tracking-wider">Online &amp; Clinic</span>
+</div>
+<div class="hidden md:block w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="payments">payments</span>
+<span class="font-caption text-caption uppercase tracking-wider">Safe Payments</span>
+</div>
+<div class="hidden lg:block w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-sm text-on-surface-variant hidden lg:flex">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="notifications_active">notifications_active</span>
+<span class="font-caption text-caption uppercase tracking-wider">Reminders</span>
+</div>
+<div class="hidden lg:block w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-sm text-on-surface-variant hidden lg:flex">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="prescriptions">prescriptions</span>
+<span class="font-caption text-caption uppercase tracking-wider">Digital Rx</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Speciality Search -->
+<section class="bg-surface-container-low py-xxl border-b border-outline-variant">
+<div class="max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Search Care by Speciality</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Find experts across various medical fields</p>
+</div>
+<div class="flex flex-wrap justify-center gap-md max-w-4xl mx-auto">
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="stethoscope">stethoscope</span> General Physician
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="dentistry">dentistry</span> Dentist
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="dermatology">dermatology</span> Dermatology
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="cardiology">cardiology</span> Cardiology
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="pediatrics">pediatrics</span> Pediatrics
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="gynecology">gynecology</span> Gynecology
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="orthopedics">orthopedics</span> Orthopedic
+                    </a>
+<a class="px-lg py-sm bg-surface-container-lowest border border-outline-variant rounded-full font-label-md text-label-md text-on-surface hover:border-primary hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="neurology">neurology</span> Neurology
+                    </a>
+</div>
+</div>
+</section>
+<!-- 5. How Booking Works -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">How Booking Works</h2>
+<div class="relative">
+<!-- Connecting Line -->
+<div class="absolute top-8 left-[10%] right-[10%] h-[1px] bg-outline-variant hidden md:block"></div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-xl relative z-10">
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full border border-primary flex items-center justify-center text-primary font-headline-md text-headline-md mb-md bg-surface-container-lowest">
+                            1
+                        </div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Search Doctor</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Find a specialist by name, speciality, or location.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full border border-primary flex items-center justify-center text-primary font-headline-md text-headline-md mb-md bg-surface-container-lowest">
+                            2
+                        </div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Select Slot</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Choose a convenient date and time for your visit.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full border border-primary flex items-center justify-center text-primary font-headline-md text-headline-md mb-md bg-surface-container-lowest">
+                            3
+                        </div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Confirm</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Review details and secure your appointment.</p>
+</div>
+<div class="flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full border border-primary flex items-center justify-center text-primary font-headline-md text-headline-md mb-md bg-surface-container-lowest">
+                            4
+                        </div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Consult</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Meet your doctor online or at the clinic.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Verified Doctors -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Top Verified Doctors</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Highly rated specialists ready to help</p>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline hidden md:block" href="#">View all doctors</a>
+</div>
+<div class="space-y-0">
+<!-- Doctor Row 1 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between py-md border-b border-outline-variant gap-md">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-surface-dim overflow-hidden">
+<img alt="Dr. Sarah Jenkins" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKTG1RgHR1vkAYCaezq-VsXeDAJRHwpgnX6ySs2RbQYQ4hoSNjC6U5F_6-T_7ETbTEtwrLeZKQjdtb9EGrjiG420ufZV3Hp_QEZNecydSzN6JtPyIrD9rJm_JiXCM6na7TAw_OKyIr2Y45Eyo6T9deqTKg9j5ZyADfZFuws3J04E3S3kLtN3aNUYMm7HfAq3roY3YgMXaU3D_z_QO6Vo7Fn_lnlWhBT-0MRvVPzN6tmPA9T7dM3wutrZ6zLoI0Pf_Rj46m8yQaWd8"/>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface flex items-center gap-xs">Dr. Sarah Jenkins <span class="material-symbols-outlined text-primary text-[16px] filled" data-icon="verified">verified</span></h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Cardiologist • 15 Yrs Exp.</p>
+<div class="flex items-center gap-xs mt-1">
+<span class="material-symbols-outlined text-primary text-[14px] filled" data-icon="star">star</span>
+<span class="font-caption text-caption text-on-surface-variant">4.9 (120 reviews)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors">View Profile</button>
+<button class="flex-1 md:flex-none px-4 py-2 bg-primary-container text-white rounded-full font-label-md text-label-md hover:bg-primary transition-colors">Book</button>
+</div>
+</div>
+<!-- Doctor Row 2 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between py-md border-b border-outline-variant gap-md">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-surface-dim overflow-hidden">
+<img alt="Dr. Michael Chen" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKTG1RgHR1vkAYCaezq-VsXeDAJRHwpgnX6ySs2RbQYQ4hoSNjC6U5F_6-T_7ETbTEtwrLeZKQjdtb9EGrjiG420ufZV3Hp_QEZNecydSzN6JtPyIrD9rJm_JiXCM6na7TAw_OKyIr2Y45Eyo6T9deqTKg9j5ZyADfZFuws3J04E3S3kLtN3aNUYMm7HfAq3roY3YgMXaU3D_z_QO6Vo7Fn_lnlWhBT-0MRvVPzN6tmPA9T7dM3wutrZ6zLoI0Pf_Rj46m8yQaWd8"/>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface flex items-center gap-xs">Dr. Michael Chen <span class="material-symbols-outlined text-primary text-[16px] filled" data-icon="verified">verified</span></h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Dermatologist • 10 Yrs Exp.</p>
+<div class="flex items-center gap-xs mt-1">
+<span class="material-symbols-outlined text-primary text-[14px] filled" data-icon="star">star</span>
+<span class="font-caption text-caption text-on-surface-variant">4.8 (85 reviews)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors">View Profile</button>
+<button class="flex-1 md:flex-none px-4 py-2 bg-primary-container text-white rounded-full font-label-md text-label-md hover:bg-primary transition-colors">Book</button>
+</div>
+</div>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline mt-md inline-block md:hidden" href="#">View all doctors</a>
+</section>
+<!-- 7. Featured Clinics -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Featured Clinics</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Top-rated medical centers near you</p>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline hidden md:block" href="#">View all clinics</a>
+</div>
+<div class="space-y-0">
+<!-- Clinic Row 1 -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center py-md border-b border-outline-variant gap-md">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">City Health Hospital</h3>
+<div class="flex items-center gap-sm text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span> Downtown</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="group">group</span> 45 Doctors</span>
+</div>
+</div>
+<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors w-full md:w-auto">View Clinic</button>
+</div>
+<!-- Clinic Row 2 -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center py-md border-b border-outline-variant gap-md">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Green Valley Medical Center</h3>
+<div class="flex items-center gap-sm text-on-surface-variant font-body-md text-body-md">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span> Westside</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="group">group</span> 28 Doctors</span>
+</div>
+</div>
+<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors w-full md:w-auto">View Clinic</button>
+</div>
+</div>
+</section>
+<!-- 8. Consultation Comparison -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">Ways to Consult</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+<div class="border-r border-outline-variant pr-md">
+<div class="flex items-center gap-sm mb-md border-b-2 border-primary inline-flex pb-1">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="videocam">videocam</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Online Video Consult</h3>
+</div>
+<ul class="space-y-sm font-body-md text-body-md text-on-surface-variant mt-md">
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> No travel required</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> Instant digital prescriptions</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> Best for follow-ups &amp; minor issues</li>
+</ul>
+</div>
+<div class="pl-md">
+<div class="flex items-center gap-sm mb-md border-b-2 border-primary inline-flex pb-1">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="local_hospital">local_hospital</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">In-Clinic Visit</h3>
+</div>
+<ul class="space-y-sm font-body-md text-body-md text-on-surface-variant mt-md">
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> Comprehensive physical exam</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> On-site tests and diagnostics</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[18px]" data-icon="check">check</span> Best for severe symptoms</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- 9. Privacy Section -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant bg-surface-container-lowest">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Your Health Data,<br/>Fully Secured.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-md">We use bank-level encryption to ensure your medical records, prescriptions, and consultation history remain strictly confidential. You control who sees your data.</p>
+<ul class="space-y-sm font-body-md text-body-md text-on-surface-variant">
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[20px]" data-icon="lock">lock</span> HIPAA Compliant</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[20px]" data-icon="security">security</span> End-to-End Encryption</li>
+<li class="flex items-center gap-sm"><span class="material-symbols-outlined text-primary text-[20px]" data-icon="visibility_off">visibility_off</span> Private Consultations</li>
+</ul>
+</div>
+<div class="flex justify-center">
+<div class="w-48 h-48 rounded-full border border-outline-variant flex items-center justify-center bg-surface-container-low">
+<span class="material-symbols-outlined text-primary text-[80px]" data-icon="enhanced_encryption">enhanced_encryption</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 10. Digital Prescription -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">Instant Digital Prescriptions</h2>
+<div class="max-w-2xl mx-auto border border-outline-variant bg-surface-container-lowest p-lg shadow-sm">
+<div class="border-b border-outline-variant pb-md mb-md flex justify-between items-start">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface">Dr. Sarah Jenkins</h3>
+<p class="font-caption text-caption text-on-surface-variant">Cardiology</p>
+</div>
+<div class="text-right">
+<p class="font-caption text-caption text-on-surface-variant">Date: Oct 24, 2024</p>
+<p class="font-caption text-caption text-on-surface-variant">Rx No: 104928</p>
+</div>
+</div>
+<div class="mb-lg">
+<p class="font-body-md text-body-md text-on-surface"><span class="font-label-md text-label-md">Patient:</span> John Doe</p>
+<p class="font-body-md text-body-md text-on-surface"><span class="font-label-md text-label-md">Diagnosis:</span> Mild Hypertension</p>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center py-sm border-b border-outline-variant border-dashed">
+<span class="font-body-md text-body-md text-on-surface">1. Lisinopril 10mg</span>
+<span class="font-caption text-caption text-on-surface-variant">1 tab daily (30 days)</span>
+</div>
+<div class="flex justify-between items-center py-sm border-b border-outline-variant border-dashed">
+<span class="font-body-md text-body-md text-on-surface">2. Amlodipine 5mg</span>
+<span class="font-caption text-caption text-on-surface-variant">1 tab nightly (30 days)</span>
+</div>
+</div>
+<div class="mt-xl text-right">
+<p class="font-caption text-caption text-on-surface-variant italic">Digitally Signed</p>
+</div>
+</div>
+</section>
+<!-- 11. Family Health -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant bg-surface-container-low">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl items-center">
+<div class="order-2 md:order-1 flex justify-center">
+<div class="grid grid-cols-2 gap-md">
+<div class="flex flex-col items-center p-md border border-outline-variant bg-surface-container-lowest rounded-full w-32 h-32 justify-center">
+<span class="material-symbols-outlined text-primary text-[32px] mb-xs" data-icon="face">face</span>
+<span class="font-label-md text-label-md text-on-surface">Self</span>
+</div>
+<div class="flex flex-col items-center p-md border border-outline-variant bg-surface-container-lowest rounded-full w-32 h-32 justify-center mt-lg">
+<span class="material-symbols-outlined text-primary text-[32px] mb-xs" data-icon="child_care">child_care</span>
+<span class="font-label-md text-label-md text-on-surface">Child</span>
+</div>
+<div class="flex flex-col items-center p-md border border-outline-variant bg-surface-container-lowest rounded-full w-32 h-32 justify-center -mt-lg">
+<span class="material-symbols-outlined text-primary text-[32px] mb-xs" data-icon="elderly">elderly</span>
+<span class="font-label-md text-label-md text-on-surface">Parent</span>
+</div>
+</div>
+</div>
+<div class="order-1 md:order-2">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Manage Health for the Whole Family</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-md">Keep track of appointments, medical records, and prescriptions for your children and parents all from a single account.</p>
+<button class="px-lg py-sm border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-lowest transition-colors">Add Family Member</button>
+</div>
+</div>
+</section>
+<!-- 12. Payments & Safety -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Transparent &amp; Secure Payments</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">Know the cost upfront, pay securely.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-xl">
+<div class="flex flex-col items-center text-center max-w-xs">
+<span class="material-symbols-outlined text-primary text-[40px] mb-sm" data-icon="credit_score">credit_score</span>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Secure Checkout</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">PCI-compliant payment gateways protect your financial data.</p>
+</div>
+<div class="hidden md:block w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col items-center text-center max-w-xs">
+<span class="material-symbols-outlined text-primary text-[40px] mb-sm" data-icon="receipt_long">receipt_long</span>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Transparent Pricing</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">No hidden fees. See consultation charges before you book.</p>
+</div>
+<div class="hidden md:block w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col items-center text-center max-w-xs">
+<span class="material-symbols-outlined text-primary text-[40px] mb-sm" data-icon="health_and_safety">health_and_safety</span>
+<h3 class="font-label-md text-label-md text-on-surface mb-xs">Insurance Support</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Download detailed invoices for easy insurance reimbursement.</p>
+</div>
+</div>
+<p class="text-center font-caption text-caption text-on-surface-variant mt-xl border-t border-outline-variant pt-md inline-block mx-auto">Appointments are confirmed only upon successful payment authorization.</p>
+</section>
+<!-- 13. Dashboard Preview -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant bg-surface-container-lowest">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">Your Personal Health Dashboard</h2>
+<div class="max-w-4xl mx-auto border border-outline-variant shadow-sm flex h-96">
+<div class="w-64 border-r border-outline-variant bg-surface p-md hidden md:block">
+<div class="font-label-md text-label-md text-on-surface mb-lg">John Doe</div>
+<ul class="space-y-md">
+<li class="flex items-center gap-sm text-primary font-label-md text-label-md"><span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span> Appointments</li>
+<li class="flex items-center gap-sm text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined" data-icon="folder">folder</span> Medical Records</li>
+<li class="flex items-center gap-sm text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined" data-icon="prescriptions">prescriptions</span> Prescriptions</li>
+<li class="flex items-center gap-sm text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined" data-icon="settings">settings</span> Settings</li>
+</ul>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-lg overflow-y-auto">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Upcoming Appointments</h3>
+<div class="border border-outline-variant p-md mb-md">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-md text-label-md text-on-surface">Dr. Sarah Jenkins</span>
+<span class="bg-surface-container-low text-primary px-2 py-1 text-caption font-caption rounded">Confirmed</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xs">Cardiology Consult</p>
+<p class="font-caption text-caption text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span> Tomorrow, 10:00 AM - Online</p>
+<div class="mt-md border-t border-outline-variant pt-sm">
+<button class="text-primary font-label-md text-label-md text-sm">Join Video Call (Available at 9:55 AM)</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 14. Reviews -->
+<section class="py-xxl max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">Patient Experiences</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+<div class="border-b md:border-b-0 md:border-r border-outline-variant pb-md md:pb-0 md:pr-md">
+<div class="flex items-center gap-xs mb-sm text-primary">
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">"Very seamless experience booking an online consult. The doctor was punctual and the digital prescription was ready immediately."</p>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center font-label-md text-label-md text-on-surface">JD</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">J.D.</p>
+<p class="font-caption text-caption text-on-surface-variant">Online Consult</p>
+</div>
+</div>
+</div>
+<div class="border-b md:border-b-0 md:border-r border-outline-variant pb-md md:pb-0 md:pr-md pl-0 md:pl-md">
+<div class="flex items-center gap-xs mb-sm text-primary">
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="star_half">star_half</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">"Found a great pediatrician for my son. The clinic visit was organized and we didn't have to wait at all."</p>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center font-label-md text-label-md text-on-surface">MS</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">M.S.</p>
+<p class="font-caption text-caption text-on-surface-variant">Clinic Visit</p>
+</div>
+</div>
+</div>
+<div class="pl-0 md:pl-md">
+<div class="flex items-center gap-xs mb-sm text-primary">
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+<span class="material-symbols-outlined text-[18px] filled" data-icon="star">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">"Managing appointments for my elderly parents has never been easier. The reminder feature is a lifesaver."</p>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center font-label-md text-label-md text-on-surface">AK</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">A.K.</p>
+<p class="font-caption text-caption text-on-surface-variant">Family Account</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 15. FAQ -->
+<section class="py-xxl max-w-[800px] mx-auto px-margin_mobile md:px-margin_desktop border-b border-outline-variant">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xl text-center">Frequently Asked Questions</h2>
+<div class="space-y-0">
+<div class="border-b border-outline-variant py-md cursor-pointer group">
+<div class="flex justify-between items-center text-primary">
+<h3 class="font-label-md text-label-md group-hover:underline">How do I join a video consultation?</h3>
+<span class="material-symbols-outlined" data-icon="expand_less">expand_less</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">You will receive a link via email and SMS 15 minutes before your appointment. You can also join directly from your patient dashboard.</p>
+</div>
+<div class="border-b border-outline-variant py-md cursor-pointer group">
+<div class="flex justify-between items-center text-on-surface">
+<h3 class="font-label-md text-label-md group-hover:underline">Can I cancel or reschedule my appointment?</h3>
+<span class="material-symbols-outlined" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="border-b border-outline-variant py-md cursor-pointer group">
+<div class="flex justify-between items-center text-on-surface">
+<h3 class="font-label-md text-label-md group-hover:underline">Are my medical records safe?</h3>
+<span class="material-symbols-outlined" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="py-md cursor-pointer group">
+<div class="flex justify-between items-center text-on-surface">
+<h3 class="font-label-md text-label-md group-hover:underline">Do you accept health insurance?</h3>
+<span class="material-symbols-outlined" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 16. Join CTA -->
+<section class="bg-surface-container-low py-xxl border-b border-outline-variant">
+<div class="max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop text-center">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Are you a healthcare provider?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-2xl mx-auto">Join thousands of doctors growing their practice with Medicare Connect. Manage appointments, digital records, and patient follow-ups easily.</p>
+<div class="flex flex-col md:flex-row justify-center items-center gap-md">
+<button class="bg-primary-container text-white px-xl py-sm rounded-full font-label-md text-label-md hover:bg-primary transition-colors w-full md:w-auto">Register as Doctor</button>
+<button class="border border-primary text-primary px-xl py-sm rounded-full font-label-md text-label-md hover:bg-surface-container-lowest transition-colors w-full md:w-auto">Register Clinic</button>
+</div>
+</div>
+</section>
+<!-- 17. Footer -->
+<footer class="bg-surface-container-lowest w-full py-xl flat no shadows">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-gutter max-w-[1280px] mx-auto px-margin_mobile md:px-margin_desktop">
+<div class="col-span-1 md:col-span-2 space-y-md">
+<div class="font-headline-md text-headline-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined filled" data-icon="medical_services">medical_services</span> Medicare Connect
+                </div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Modern healthcare access, simplified. Find trusted professionals and manage your health seamlessly.
+                </p>
+<div class="flex gap-sm mt-md">
+<a class="text-on-surface-variant hover:text-primary" href="#"><span class="material-symbols-outlined" data-icon="public">public</span></a>
+<a class="text-on-surface-variant hover:text-primary" href="#"><span class="material-symbols-outlined" data-icon="share">share</span></a>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-xl border-t border-outline-variant pt-md">
+                    © 2024 Medicare Connect. All rights reserved.
+                </div>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-md">Patients</h4>
+<ul class="space-y-sm">
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Find Doctors</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Book Appointment</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Video Consult</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-md">Providers</h4>
+<ul class="space-y-sm">
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Register as Doctor</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Register Clinic</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Provider Portal</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface mb-md">Company</h4>
+<ul class="space-y-sm">
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">About Us</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Contact</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Privacy Policy</a></li>
+<li><a class="text-on-surface-variant hover:text-primary hover:underline transition-all cursor-pointer font-body-md text-body-md" href="#">Terms of Service</a></li>
+</ul>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

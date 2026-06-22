@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Find Doctors - MediBook Health</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#dae9ff",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#e9f1ff",
+                        "on-primary-container": "#bfd9ff",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#d0e4ff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#42474b",
+                        "on-primary": "#ffffff",
+                        "primary": "#00477f",
+                        "on-secondary-fixed-variant": "#00531f",
+                        "secondary-fixed": "#68ff8a",
+                        "on-primary-fixed-variant": "#004881",
+                        "on-surface-variant": "#414751",
+                        "surface": "#f8f9ff",
+                        "outline": "#727782",
+                        "tertiary": "#41464a",
+                        "surface-container": "#e4efff",
+                        "surface-tint": "#0e60a6",
+                        "secondary-fixed-dim": "#3ae36d",
+                        "primary-fixed": "#d3e4ff",
+                        "inverse-primary": "#a2c9ff",
+                        "inverse-surface": "#103250",
+                        "surface-bright": "#f8f9ff",
+                        "on-secondary-container": "#00722e",
+                        "on-error": "#ffffff",
+                        "background": "#f8f9ff",
+                        "outline-variant": "#c1c7d2",
+                        "on-surface": "#001d35",
+                        "tertiary-fixed": "#dfe3e7",
+                        "secondary": "#006e2c",
+                        "tertiary-container": "#595e61",
+                        "tertiary-fixed-dim": "#c3c7cb",
+                        "on-background": "#001d35",
+                        "on-primary-fixed": "#001c38",
+                        "surface-container-low": "#eef4ff",
+                        "surface-container-highest": "#d0e4ff",
+                        "on-secondary-fixed": "#002108",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#171c1f",
+                        "on-tertiary-container": "#d3d7db",
+                        "secondary-container": "#5bfd83",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#c1ddff",
+                        "primary-container": "#0b5fa5",
+                        "primary-fixed-dim": "#a2c9ff",
+                        "cta-green": "#4EF27A"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "section-gap": "64px",
+                        "container-padding-mobile": "20px",
+                        "gutter": "24px",
+                        "container-padding-desktop": "40px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0px 10px 30px rgba(11, 95, 165, 0.05);
+        }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        body {
+            background-color: #f8f9ff;
+            background-image: radial-gradient(at 0% 0%, hsla(213,100%,92%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,100%,94%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(213,100%,92%,1) 0, transparent 50%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="glass-nav shadow-[0px_10px_30px_rgba(11,95,165,0.05)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-container-padding-desktop max-w-7xl mx-auto h-20">
+<!-- Brand -->
+<div class="font-display-lg text-headline-md font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="medical_services" data-weight="fill">medical_services</span>
+                MediBook Health
+            </div>
+<!-- Links (Desktop) -->
+<div class="hidden md:flex items-center gap-8">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Home</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1 active" href="#">Find Doctors</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Clinics</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Specialities</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">About</a>
+</div>
+<!-- Actions -->
+<div class="hidden md:flex items-center gap-4">
+<button class="font-label-md text-label-md text-primary hover:bg-surface-variant px-4 py-2 rounded-full transition-colors">Login</button>
+<button class="font-label-md text-label-md bg-primary text-on-primary px-6 py-2 rounded-full hover:shadow-lg transition-all hover:-translate-y-0.5">Sign Up</button>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-container-padding-desktop py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+<!-- Header & Search (Spans full width above content) -->
+<div class="lg:col-span-12 mb-4">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-6">Find Specialist Doctors</h1>
+<!-- Integrated Search Bar -->
+<div class="glass-card rounded-full p-2 flex items-center gap-2 max-w-3xl">
+<div class="flex-grow flex items-center bg-[#F7FBFF] rounded-full px-4 py-3 border border-transparent focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-outline mr-3" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 p-0 font-body-md text-on-surface placeholder:text-outline-variant" placeholder="Search doctors, specialities, or symptoms..." type="text"/>
+</div>
+<div class="flex-grow flex items-center bg-[#F7FBFF] rounded-full px-4 py-3 border border-transparent focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all hidden md:flex">
+<span class="material-symbols-outlined text-outline mr-3" data-icon="location_on">location_on</span>
+<input class="w-full bg-transparent border-none focus:ring-0 p-0 font-body-md text-on-surface placeholder:text-outline-variant" placeholder="Location" type="text"/>
+</div>
+<button class="bg-primary text-on-primary rounded-full px-8 py-3 font-label-md text-label-md hover:shadow-lg transition-all flex-shrink-0">Search</button>
+</div>
+</div>
+<!-- Left Sidebar Filters -->
+<aside class="lg:col-span-3 space-y-6">
+<div class="glass-card rounded-[24px] p-6 sticky top-28">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-[20px] text-on-surface">Filters</h2>
+<button class="font-label-sm text-primary hover:underline">Reset All</button>
+</div>
+<!-- Speciality -->
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Speciality</h3>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Cardiologist</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Dermatologist</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Neurologist</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="font-body-md text-on-surface group-hover:text-primary transition-colors">Pediatrician</span>
+</label>
+<button class="font-label-sm text-primary hover:underline mt-2 inline-flex items-center">
+                            + View More
+                        </button>
+</div>
+</div>
+<div class="h-px bg-outline-variant/30 w-full mb-6"></div>
+<!-- Availability -->
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Availability</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-primary bg-primary/10 text-primary font-label-sm transition-colors">Today</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-sm transition-colors">Tomorrow</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-sm transition-colors">Next 7 Days</button>
+</div>
+</div>
+<div class="h-px bg-outline-variant/30 w-full mb-6"></div>
+<!-- Rating -->
+<div class="mb-6">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-3 uppercase tracking-wider">Rating</h3>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="form-radio text-primary border-outline-variant focus:ring-primary h-5 w-5" name="rating" type="radio"/>
+<span class="flex items-center text-[#FFB400]">
+<span class="material-symbols-outlined text-[18px]" data-icon="star" data-weight="fill">star</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="star" data-weight="fill">star</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="star" data-weight="fill">star</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="star" data-weight="fill">star</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="star">star</span>
+<span class="font-body-md text-on-surface ml-2">&amp; Up</span>
+</span>
+</label>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Grid of Doctor Cards -->
+<section class="lg:col-span-9">
+<div class="flex justify-between items-center mb-6">
+<p class="font-body-md text-on-surface-variant">Showing <span class="font-bold text-on-surface">12</span> doctors available</p>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-on-surface-variant">Sort by:</span>
+<select class="bg-transparent border-none font-label-md text-primary focus:ring-0 cursor-pointer pr-8">
+<option>Relevance</option>
+<option>Rating: High to Low</option>
+<option>Fee: Low to High</option>
+</select>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Doctor Card 1 -->
+<div class="glass-card rounded-[24px] p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 group">
+<div class="flex items-start gap-4 mb-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<img class="w-full h-full object-cover rounded-full border-2 border-white shadow-sm" data-alt="A highly detailed portrait of a middle-aged female cardiologist with warm brown skin, wearing a crisp white medical coat over a light blue shirt. She has a stethoscope around her neck. The background is a brightly lit, modern clinical office setting. The lighting is soft and professional, evoking trust and expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAreuTXBO829iCQ9s8J3spm8fiRyyH0bD0zgN6BtMmdnQ40o89edqszkFv4NI84SeDEk-MfvbW-vUU0ZcuVzzEr-EIvtcWnVIpqzHxjVuXIj0zS6p48d2YuStWVGCxk_K87KwqpaG7CXXuTyoKkKXriFWOwtsLlhBMaw-9kmeO_px2S2DkiXdBJMXe9MR7cIFiMj9auzYJPTTjbieyfEBOXX81ED3JJZWHqLWTw7SHLE3c1KoK2xq-JwU57Dfckq3eqhc-T6uzGPbU"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-secondary rounded-full border-2 border-white" title="Available"></div>
+</div>
+<div>
+<h3 class="font-headline-md text-[18px] text-on-surface group-hover:text-primary transition-colors">Dr. Sarah Jenkins</h3>
+<p class="font-label-md text-primary mb-1">Cardiologist</p>
+<p class="font-label-sm text-on-surface-variant">MD, FACC • 15 Yrs Exp.</p>
+</div>
+</div>
+<div class="flex justify-between items-center mb-4 px-2 py-3 bg-surface-container-low rounded-[16px]">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Rating</span>
+<div class="flex items-center gap-1 font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-[#FFB400]" data-icon="star" data-weight="fill">star</span>
+                                4.9 <span class="text-outline-variant font-normal">(120)</span>
+</div>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Consult Fee</span>
+<span class="font-label-md text-on-surface">$150</span>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full bg-[#4EF27A] text-[#002108] font-label-md text-label-md py-3 rounded-full hover:shadow-lg hover:bg-[#3ae36d] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_month">calendar_month</span>
+                            Book Appointment
+                        </button>
+</div>
+</div>
+<!-- Doctor Card 2 -->
+<div class="glass-card rounded-[24px] p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 group">
+<div class="flex items-start gap-4 mb-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<img class="w-full h-full object-cover rounded-full border-2 border-white shadow-sm" data-alt="A highly detailed portrait of a senior male neurologist with silver hair, wearing a white lab coat. He has a gentle, reassuring smile. The setting is a state-of-the-art consultation room with soft, diffused white light. The overall mood is calm, authoritative, and compassionate, fitting a high-end medical software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArraoUHPitWDio8o4jM58EGyyEmI1td6stFSFewh65fRzJfHeZY7FZufFHAP9XEK5ghqQAx3QsPEb3A6pEJwWs2HDxB3ZapX09d3e1IKQJg4ZZN8xVoMfBtuCVChz0dRg0ZRQYbSwGzIUWzBpfadYTAS8_PYXEYuSyBwthZfCRpAYX5lQZgZvCZbIiLwLvwhAgVMfWfQY9KkbehS0xJv-mYxY2m58HeUKeHUiEIc2ZDRhUGxETRayRx5K79wce-Du1J3Ds-wSNXn8"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-secondary rounded-full border-2 border-white" title="Available"></div>
+</div>
+<div>
+<h3 class="font-headline-md text-[18px] text-on-surface group-hover:text-primary transition-colors">Dr. Robert Chen</h3>
+<p class="font-label-md text-primary mb-1">Neurologist</p>
+<p class="font-label-sm text-on-surface-variant">MBBS, MD • 22 Yrs Exp.</p>
+</div>
+</div>
+<div class="flex justify-between items-center mb-4 px-2 py-3 bg-surface-container-low rounded-[16px]">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Rating</span>
+<div class="flex items-center gap-1 font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-[#FFB400]" data-icon="star" data-weight="fill">star</span>
+                                4.8 <span class="text-outline-variant font-normal">(85)</span>
+</div>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Consult Fee</span>
+<span class="font-label-md text-on-surface">$200</span>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full bg-[#4EF27A] text-[#002108] font-label-md text-label-md py-3 rounded-full hover:shadow-lg hover:bg-[#3ae36d] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_month">calendar_month</span>
+                            Book Appointment
+                        </button>
+</div>
+</div>
+<!-- Doctor Card 3 -->
+<div class="glass-card rounded-[24px] p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 group">
+<div class="flex items-start gap-4 mb-4">
+<div class="relative w-20 h-20 flex-shrink-0">
+<img class="w-full h-full object-cover rounded-full border-2 border-white shadow-sm" data-alt="A vibrant and highly detailed portrait of a young female dermatologist with dark wavy hair, wearing stylish medical scrubs. She looks confident and friendly. The background features a subtle, frosted glass texture indicative of a modern clinic. The lighting is bright and clean, enhancing a sense of premium healthcare service." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2DlqoMLRo6RMz14LrUpEhJfhzWvQg63meSYH8SZjS_YR3H7jX17dnT0QDB6DBMb4s2L423B9NuPWGpDH3EHLwKKdzfuC5rZoM8DXDGKRSuElXCz9fntfTSlWSifaVM5_zjKHY7Gb5hjlEVORZohwK9if6UqDb2eMZwKpKGewG86tMMzQ5NgZcQ3kx-HN_LKFCzzUhSLdtYExxQsMSuJjLchBbjib8Eyj352-Hbm--t7FxKTHZgv82PZYYaP88JZb04LWWsUlp1zA"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-outline-variant rounded-full border-2 border-white" title="Offline"></div>
+</div>
+<div>
+<h3 class="font-headline-md text-[18px] text-on-surface group-hover:text-primary transition-colors">Dr. Emily Patel</h3>
+<p class="font-label-md text-primary mb-1">Dermatologist</p>
+<p class="font-label-sm text-on-surface-variant">MD, FAAD • 8 Yrs Exp.</p>
+</div>
+</div>
+<div class="flex justify-between items-center mb-4 px-2 py-3 bg-surface-container-low rounded-[16px]">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Rating</span>
+<div class="flex items-center gap-1 font-label-md text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-[#FFB400]" data-icon="star" data-weight="fill">star</span>
+                                4.9 <span class="text-outline-variant font-normal">(210)</span>
+</div>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-on-surface-variant mb-1">Consult Fee</span>
+<span class="font-label-md text-on-surface">$120</span>
+</div>
+</div>
+<div class="mt-auto">
+<button class="w-full bg-[#4EF27A] text-[#002108] font-label-md text-label-md py-3 rounded-full hover:shadow-lg hover:bg-[#3ae36d] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_month">calendar_month</span>
+                            Book Appointment
+                        </button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center mt-12 gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary font-label-md shadow-md">1</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors font-label-md">2</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors font-label-md">3</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest full-width mt-section-gap border-t border-outline-variant py-section-gap">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-container-padding-desktop max-w-7xl mx-auto">
+<div>
+<div class="font-display-lg text-headline-md font-bold text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="medical_services" data-weight="fill">medical_services</span>
+                    MediBook Health
+                </div>
+<p class="font-body-md text-on-surface-variant">© 2024 MediBook Health. All rights reserved.</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-body-md text-body-md text-on-surface hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-2">
+<a class="font-body-md text-body-md text-on-surface hover:text-primary transition-colors" href="#">Contact Us</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>
