@@ -11,6 +11,10 @@ const appointmentSchema = new mongoose.Schema({
     ref: 'Doctor',
     required: true
   },
+  clinicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Clinic' // Optional, populated if doctor is a clinic_doctor
+  },
   date: {
     type: Date,
     required: true

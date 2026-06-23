@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <header className="bg-surface-container-lowest fixed top-0 w-full z-50 border-b border-outline-variant flat no shadows">
@@ -22,26 +23,36 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer">Login</button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <button className="bg-primary-container text-white font-label-md text-label-md px-6 py-2 rounded-full hover:bg-primary transition-colors cursor-pointer active:scale-95">
-                Book Appointment
-              </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <Link to="/dashboard" className="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md px-2 py-1 cursor-pointer">Dashboard</Link>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <Link to="/dashboard" className="text-on-surface hover:text-primary transition-colors font-label-md">Dashboard</Link>
+              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={logout}>
+                {user?.imageUrl ? (
+                  <img src={user.imageUrl} alt="Avatar" className="w-8 h-8 rounded-full border border-primary" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                    <span className="material-symbols-outlined text-[18px]">person</span>
+                  </div>
+                )}
+                <span className="text-on-surface font-label-md text-sm hidden lg:block">Sign out</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Link to="/auth" className="text-on-surface hover:text-primary transition-colors font-label-md">Login</Link>
+              <Link to="/auth" className="bg-primary text-white hover:bg-primary-container hover:text-on-primary-container px-5 py-2.5 rounded-full transition-colors font-label-md">
+                Create Account
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="flex md:hidden items-center gap-4">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          {isAuthenticated && (
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white cursor-pointer" onClick={logout}>
+               <span className="material-symbols-outlined text-[18px]">logout</span>
+            </div>
+          )}
           <button 
             className="text-primary p-2 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -59,19 +70,16 @@ const Navbar = () => {
           <Link className="block text-on-surface-variant font-label-md text-label-md py-2 border-b border-outline-variant/30" to="#" onClick={() => setIsMobileMenuOpen(false)}>Specialities</Link>
           <Link className="block text-on-surface-variant font-label-md text-label-md py-2 border-b border-outline-variant/30" to="#" onClick={() => setIsMobileMenuOpen(false)}>How It Works</Link>
           
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="block w-full text-left text-on-surface-variant font-label-md text-label-md py-2 border-b border-outline-variant/30" onClick={() => setIsMobileMenuOpen(false)}>Login</button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <button className="block w-full mt-4 bg-primary-container text-white font-label-md text-label-md px-4 py-3 rounded-full text-center" onClick={() => setIsMobileMenuOpen(false)}>
-                Book Appointment
-              </button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
+          {!isAuthenticated ? (
+            <>
+              <Link to="/auth" className="block w-full text-left text-on-surface-variant font-label-md text-label-md py-2 border-b border-outline-variant/30" onClick={() => setIsMobileMenuOpen(false)}>Login</Link>
+              <Link to="/auth" className="block w-full mt-4 bg-primary text-white hover:bg-primary-container hover:text-on-primary-container px-4 py-3 rounded-full text-center font-label-md transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Create Account
+              </Link>
+            </>
+          ) : (
             <Link className="block text-on-surface-variant font-label-md text-label-md py-2" to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
-          </SignedIn>
+          )}
         </div>
       )}
     </header>

@@ -170,6 +170,14 @@
   .material-symbols-outlined.filled {
     font-variation-settings: 'FILL' 1;
   }
+
+  /* Completely hide Clerk watermarks to adhere to user requirements */
+  .cl-footer {
+    display: none !important;
+  }
+  .cl-internal-b3alnn {
+    display: none !important;
+  }
 }
 
 

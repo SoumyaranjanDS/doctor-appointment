@@ -1,10 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import { Agentation } from 'agentation';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import FindDoctors from './pages/FindDoctors';
 import Dashboard from './pages/Dashboard';
 import DoctorProfile from './pages/DoctorProfile';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import OnboardingSelection from './pages/onboarding/OnboardingSelection';
+import IndividualDoctorForm from './pages/onboarding/IndividualDoctorForm';
+import ClinicForm from './pages/onboarding/ClinicForm';
+import ClinicDoctorForm from './pages/onboarding/ClinicDoctorForm';
+import CustomAuth from './pages/CustomAuth';
+import AdminLogin from './pages/admin/AdminLogin';
+
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  return isAuthenticated ? children : <Navigate to="/auth" />;
+};
 
 function App() {
   return (
@@ -17,8 +32,35 @@ function App() {
             <Route path="doctor/:id" element={<DoctorProfile />} />
           </Route>
           
-          {/* Dashboard has its own layout/sidebar */}
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/auth" element={<CustomAuth />} />
+          
+          <Route path="/onboarding" element={
+            <PrivateRoute>
+              <OnboardingSelection />
+            </PrivateRoute>
+          } />
+          <Route path="/onboarding/doctor" element={
+            <PrivateRoute>
+              <IndividualDoctorForm />
+            </PrivateRoute>
+          } />
+          <Route path="/onboarding/clinic" element={
+            <PrivateRoute>
+              <ClinicForm />
+            </PrivateRoute>
+          } />
+          <Route path="/onboarding/clinic-doctor" element={
+            <PrivateRoute>
+              <ClinicDoctorForm />
+            </PrivateRoute>
+          } />
         </Routes>
       </Router>
       <Agentation />

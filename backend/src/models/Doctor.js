@@ -4,8 +4,26 @@ const doctorSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true
+    // Make optional so Clinics can create doctors without an immediate User account
+    required: false,
+    index: { unique: true, sparse: true }
+  },
+  providerType: {
+    type: String,
+    enum: ['individual', 'clinic_doctor'],
+    required: true
+  },
+  clinicId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Clinic',
+    required: function() { return this.providerType === 'clinic_doctor'; }
+  },
+  name: {
+    type: String,
+    required: true // Store name directly since clinic doctors might not have a userId yet
+  },
+  email: {
+    type: String // Optional email to link later
   },
   specialities: [{
     type: String
@@ -26,14 +44,6 @@ const doctorSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  clinic: {
-    name: String,
-    address: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    phone: String
-  },
   availability: [{
     dayOfWeek: {
       type: String,
@@ -52,9 +62,17 @@ const doctorSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  isVerified: {
-    type: Boolean,
-    default: false
+  documentUrl: {
+    type: String,
+    required: true // Cloudinary URL for verification document
+  },
+  approvalStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  rejectionReason: {
+    type: String
   }
 }, {
   timestamps: true

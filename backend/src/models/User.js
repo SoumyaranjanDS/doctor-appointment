@@ -1,16 +1,14 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  clerkId: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
-  },
   email: {
     type: String,
     required: true,
     unique: true
+  },
+  password: {
+    type: String,
+    required: true
   },
   firstName: {
     type: String,
@@ -18,11 +16,11 @@ const userSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
-    required: true
+    default: ''
   },
   role: {
     type: String,
-    enum: ['patient', 'doctor', 'admin'],
+    enum: ['patient', 'doctor', 'clinic', 'admin'],
     default: 'patient'
   },
   profileImageUrl: {
