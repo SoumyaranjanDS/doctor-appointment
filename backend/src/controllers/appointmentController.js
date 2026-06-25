@@ -111,19 +111,21 @@ exports.updateAppointmentStatus = async (req, res) => {
     const { status } = req.body; // 'awaiting_payment' or 'cancelled'
     const userId = req.user.id;
 
-    if (!['awaiting_payment', 'cancelled', 'completed', 'no-show'].includes(status)) {
+    if (!['awaiting_payment', 'cancelled', 'completed', 'no-show', 'pending_completion'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status update' });
     }
 
     const appointment = await Appointment.findById(id).populate('doctorId');
     if (!appointment) return res.status(404).json({ error: 'Appointment not found' });
 
-    // Verify ownership (Doctor or Clinic owner)
-    // Simplified: check if logged in user's ID matches doctor's userId
-    // Real implementation needs to handle clinic_doctor cases via Clinic ownership
-    // For MVP, if it's individual, direct match.
-    if (appointment.doctorId.providerType === 'individual' && String(appointment.doctorId.userId) !== String(userId)) {
-      return res.status(403).json({ error: 'Forbidden' });
+    // Verify ownership
+    const isDoctor = String(appointment.doctorId.userId) === String(userId);
+    const isPatient = String(appointment.patientId) === String(userId);
+
+    if (status === 'completed' && appointment.status === 'pending_completion') {
+      if (!isPatient) return res.status(403).json({ error: 'Only the patient can approve completion' });
+    } else {
+      if (!isDoctor) return res.status(403).json({ error: 'Only the doctor can change status' });
     }
 
     appointment.status = status;
@@ -147,6 +149,8 @@ exports.createCheckoutSession = async (req, res) => {
       return res.status(404).json({ error: 'Appointment not found or not ready for payment' });
     }
 
+    const clientUrl = req.headers.origin || process.env.CLIENT_URL || 'http://localhost:5173';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -163,8 +167,8 @@ exports.createCheckoutSession = async (req, res) => {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/checkout-cancel`,
+      success_url: `${clientUrl}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientUrl}/checkout-cancel`,
       client_reference_id: appointment._id.toString()
     });
 
@@ -193,11 +197,15 @@ exports.getDoctorAppointments = async (req, res) => {
       .populate('patientId', 'firstName lastName email imageUrl')
       .sort({ date: 1, startTime: 1 });
 
-    const totalRevenue = appointments
-      .filter(app => app.paymentStatus === 'paid')
+    const completedRevenue = appointments
+      .filter(app => app.status === 'completed' && app.paymentStatus === 'paid')
       .reduce((sum, app) => sum + app.amount, 0);
 
-    res.json({ appointments, totalRevenue });
+    const pendingRevenue = appointments
+      .filter(app => app.status !== 'completed' && app.paymentStatus === 'paid')
+      .reduce((sum, app) => sum + app.amount, 0);
+
+    res.json({ appointments, totalRevenue: completedRevenue, pendingRevenue });
   } catch (err) {
     console.error('Error fetching doctor appointments:', err);
     res.status(500).json({ error: 'Server error' });
@@ -223,6 +231,7 @@ exports.verifyPayment = async (req, res) => {
     if (session.payment_status === 'paid' && appointment.paymentStatus !== 'paid') {
       appointment.paymentStatus = 'paid';
       appointment.status = 'confirmed';
+
       await appointment.save();
     }
 
@@ -230,6 +239,20 @@ exports.verifyPayment = async (req, res) => {
   } catch (err) {
     console.error('Error verifying payment:', err);
     res.status(500).json({ error: 'Server error during payment verification' });
+  }
+};
+
+// 7. Get single appointment
+exports.getAppointmentById = async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id)
+      .populate('doctorId')
+      .populate('patientId', 'name email');
+    if (!appointment) return res.status(404).json({ error: "Appointment not found" });
+    res.json(appointment);
+  } catch (err) {
+    console.error('Error fetching appointment:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 

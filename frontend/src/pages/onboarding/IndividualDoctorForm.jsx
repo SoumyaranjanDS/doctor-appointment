@@ -187,7 +187,7 @@ const IndividualDoctorForm = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Consultation Fee ($)</label>
+                  <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Consultation Fee (₹)</label>
                   <input 
                     type="number" name="consultationFee" required value={formData.consultationFee} onChange={handleChange}
                     className="w-full px-5 py-3.5 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface text-body-md"

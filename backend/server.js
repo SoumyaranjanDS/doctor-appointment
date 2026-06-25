@@ -1,10 +1,11 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const connectDB = require('./src/config/db');
 
-// Connect to MongoDB
-connectDB();
+// MongoDB connection will be awaited before listening
 
 const app = express();
 
@@ -48,6 +49,21 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 8081;
 
-app.listen(PORT, () => {
-    console.log(`Server running in development mode on port ${PORT}`);
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // allow frontend access
+    methods: ["GET", "POST"]
+  }
+});
+
+// Initialize socket handlers
+const videoHandler = require('./src/socket/videoHandler');
+videoHandler(io);
+
+// Connect to MongoDB and then start the server
+connectDB().then(() => {
+    server.listen(PORT, () => {
+        console.log(`Server running in development mode on port ${PORT}`);
+    });
 });

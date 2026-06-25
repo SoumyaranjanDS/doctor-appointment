@@ -15,6 +15,8 @@ import ClinicDoctorForm from './pages/onboarding/ClinicDoctorForm';
 import CustomAuth from './pages/CustomAuth';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import CheckoutCancel from './pages/CheckoutCancel';
+import VideoConsultation from './pages/VideoConsultation';
+import { Toaster } from 'react-hot-toast';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -25,6 +27,7 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <>
+      <Toaster position="top-right" />
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -43,6 +46,7 @@ function App() {
           
           <Route path="/checkout-success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
           <Route path="/checkout-cancel" element={<PrivateRoute><CheckoutCancel /></PrivateRoute>} />
+          <Route path="/video-call/:id" element={<PrivateRoute><VideoConsultation /></PrivateRoute>} />
           
           <Route path="/onboarding" element={
             <PrivateRoute>

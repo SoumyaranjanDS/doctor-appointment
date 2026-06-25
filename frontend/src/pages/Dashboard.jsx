@@ -2,6 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/api';
+import io from 'socket.io-client';
+import toast from 'react-hot-toast';
+
+const socket = io('/');
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,6 +19,7 @@ const Dashboard = () => {
   // Appointments state
   const [appointments, setAppointments] = useState([]);
   const [revenue, setRevenue] = useState(0);
+  const [pendingRevenue, setPendingRevenue] = useState(0);
   const [loadingAction, setLoadingAction] = useState(null);
 
   const menuRef = useRef(null);
@@ -77,6 +82,21 @@ const Dashboard = () => {
     fetchUserData();
   }, [navigate, user]);
 
+  // Global socket connection for notifications
+  useEffect(() => {
+    if (user?.role === 'doctor') {
+      socket.emit('register-user', user._id);
+
+      socket.on('peer-joined-room', ({ roomId }) => {
+        toast.success("The other person has joined the video consultation! Please join the room.", { duration: 5000 });
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [user]);
+
   const fetchAppointments = async (role) => {
     try {
       if (role === 'patient') {
@@ -86,6 +106,7 @@ const Dashboard = () => {
         const res = await api.get('/appointments/doctor');
         setAppointments(res.data.appointments || []);
         setRevenue(res.data.totalRevenue || 0);
+        setPendingRevenue(res.data.pendingRevenue || 0);
       }
     } catch (err) {
       console.error('Failed to fetch appointments:', err);
@@ -108,9 +129,10 @@ const Dashboard = () => {
     setLoadingAction(appointmentId);
     try {
       await api.put(`/appointments/${appointmentId}/status`, { status: newStatus });
+      toast.success('Appointment status updated');
       fetchAppointments(userRole);
     } catch (err) {
-      alert('Failed to update status');
+      toast.error(err.response?.data?.error || 'Failed to update status');
     } finally {
       setLoadingAction(null);
     }
@@ -236,10 +258,16 @@ const Dashboard = () => {
                       </Link>
                     </>
                   ) : (
-                    <>
-                      <h3 className="font-headline-lg text-on-surface mb-2">Total Revenue</h3>
-                      <p className="text-display-md text-primary font-bold">${revenue}</p>
-                    </>
+                      <div className="bg-surface p-6 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col md:flex-row items-center justify-between">
+                        <div>
+                          <h3 className="font-headline-lg text-on-surface mb-2">Total Revenue</h3>
+                          <p className="text-display-md text-primary font-bold">₹{revenue}</p>
+                        </div>
+                        <div className="mt-4 md:mt-0 text-right">
+                          <h3 className="font-headline-lg text-on-surface mb-2">Pending Amount</h3>
+                          <p className="text-display-md text-on-surface-variant font-bold">₹{pendingRevenue}</p>
+                        </div>
+                      </div>
                   )}
                 </div>
 
@@ -288,11 +316,45 @@ const Dashboard = () => {
                               disabled={loadingAction === app._id}
                               className="bg-[#4EF27A] text-[#002108] px-6 py-2 rounded-full shadow hover:shadow-lg transition-all cursor-pointer font-bold"
                             >
-                              {loadingAction === app._id ? 'Processing...' : `Pay $${app.amount}`}
+                              {loadingAction === app._id ? 'Processing...' : `Pay ₹${app.amount}`}
                             </button>
                           )}
+                          
+                          {app.paymentStatus === 'paid' && app.status !== 'completed' && app.status !== 'cancelled' && (
+                            <div className="flex gap-2">
+                              <Link to={`/video-call/${app._id}`} className="bg-primary text-white px-6 py-2 rounded-full shadow hover:shadow-lg transition-all cursor-pointer font-bold flex items-center gap-2">
+                                <span className="material-symbols-outlined">videocam</span> Join Room
+                              </Link>
 
-                          {/* Doctor Actions */}
+                              {userRole === 'doctor' && app.status !== 'pending_completion' && (
+                                <button 
+                                  onClick={() => handleStatusUpdate(app._id, 'pending_completion')}
+                                  disabled={loadingAction === app._id}
+                                  className="bg-surface-variant text-on-surface-variant px-6 py-2 rounded-full border border-outline hover:bg-surface-container transition-all cursor-pointer font-bold"
+                                >
+                                  {loadingAction === app._id ? 'Processing...' : 'Request Completion'}
+                                </button>
+                              )}
+
+                              {userRole === 'doctor' && app.status === 'pending_completion' && (
+                                <div className="px-6 py-2 rounded-full border border-outline text-on-surface-variant font-bold bg-surface-container">
+                                  Waiting for Patient Approval
+                                </div>
+                              )}
+
+                              {userRole === 'patient' && app.status === 'pending_completion' && (
+                                <button 
+                                  onClick={() => handleStatusUpdate(app._id, 'completed')}
+                                  disabled={loadingAction === app._id}
+                                  className="bg-[#4EF27A] text-[#002108] px-6 py-2 rounded-full shadow hover:shadow-lg transition-all cursor-pointer font-bold flex items-center gap-2"
+                                >
+                                  Approve Completion
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Doctor Initial Actions */}
                           {(userRole === 'doctor' || userRole === 'clinic') && app.status === 'pending' && (
                             <div className="flex gap-2">
                               <button 
@@ -310,6 +372,12 @@ const Dashboard = () => {
                                 Reject
                               </button>
                             </div>
+                          )}
+
+                          {(userRole === 'doctor' || userRole === 'clinic') && app.status === 'confirmed' && (
+                            <Link to={`/video-call/${app._id}`} className="bg-[#005FA3] text-white px-6 py-2 rounded-full shadow hover:shadow-lg transition-all cursor-pointer font-bold flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[20px]">videocam</span> Start Video Room
+                            </Link>
                           )}
                         </div>
                       </div>

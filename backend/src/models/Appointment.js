@@ -29,7 +29,7 @@ const appointmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'awaiting_payment', 'confirmed', 'completed', 'cancelled', 'no-show'],
+    enum: ['pending', 'awaiting_payment', 'confirmed', 'pending_completion', 'completed', 'cancelled', 'no-show'],
     default: 'pending'
   },
   reasonForVisit: {
@@ -54,7 +54,7 @@ const appointmentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Prevent double booking for the same doctor at the same time
-appointmentSchema.index({ doctorId: 1, date: 1, startTime: 1 }, { unique: true });
+// Unique index removed because it conflicts with cancelled/completed appointments.
+// We handle double-booking validation inside the controller.
 
 module.exports = mongoose.model('Appointment', appointmentSchema);

@@ -247,7 +247,7 @@ const DoctorProfile = () => {
 
           <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-6 border border-outline-variant/20 mb-6">
             <span className="font-body-md text-body-md text-on-surface-variant">Consultation Fee</span>
-            <span className="font-headline-md text-headline-md text-primary">${doctor.consultationFee}</span>
+            <span className="font-headline-md text-headline-md text-primary">₹{doctor.consultationFee}</span>
           </div>
 
           <button 

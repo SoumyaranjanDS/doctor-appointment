@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8081/api', // Assuming your backend runs on port 8081 based on the .env file
+  baseURL: `/api`, // Proxied through Vite
   headers: {
     'Content-Type': 'application/json'
   }

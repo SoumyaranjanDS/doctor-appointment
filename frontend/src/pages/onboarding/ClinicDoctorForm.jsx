@@ -140,7 +140,7 @@ const ClinicDoctorForm = () => {
               />
             </div>
             <div>
-              <label className="block text-label-md font-label-md text-on-surface mb-2">Consultation Fee ($)</label>
+              <label className="block text-label-md font-label-md text-on-surface mb-2">Consultation Fee (₹)</label>
               <input 
                 type="number" name="consultationFee" required value={formData.consultationFee} onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"

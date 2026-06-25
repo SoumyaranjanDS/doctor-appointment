@@ -141,7 +141,7 @@ const FindDoctors = () => {
                   <div className="w-px h-8 bg-outline-variant/30"></div>
                   <div className="flex flex-col items-center">
                     <span className="font-label-sm text-on-surface-variant mb-1">Consult Fee</span>
-                    <span className="font-label-md text-on-surface">${doctor.consultationFee}</span>
+                    <span className="font-label-md text-on-surface">₹{doctor.consultationFee}</span>
                   </div>
                 </div>
                 <div className="mt-auto">

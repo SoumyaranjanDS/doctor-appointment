@@ -8,7 +8,8 @@ const {
   createCheckoutSession,
   getDoctorAppointments,
   getPatientAppointments,
-  verifyPayment
+  verifyPayment,
+  getAppointmentById
 } = require('../controllers/appointmentController');
 
 // Public/Open route (to see available slots before logging in)
@@ -26,5 +27,8 @@ router.get('/patient', getPatientAppointments);
 // In a full app we'd use a role middleware, here we verify ownership in the controller
 router.get('/doctor', getDoctorAppointments);
 router.put('/:id/status', updateAppointmentStatus);
+
+// Put wildcard /:id at the very bottom
+router.get('/:id', getAppointmentById);
 
 module.exports = router;

@@ -140,7 +140,7 @@ const AdminDashboard = () => {
                   <h2 className="text-headline-md font-bold mb-1">Total Platform Revenue</h2>
                   <p className="text-body-md opacity-90">Aggregated from all completed transactions</p>
                 </div>
-                <div className="text-display-md font-bold mt-4 md:mt-0">${appointmentsData.platformRevenue}</div>
+                <div className="text-display-md font-bold mt-4 md:mt-0">₹{appointmentsData.platformRevenue}</div>
               </div>
               
               <h2 className="text-headline-sm font-bold mb-4">All Appointments</h2>
