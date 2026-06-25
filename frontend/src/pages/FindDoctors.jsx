@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../config/api';
 
 const FindDoctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -10,17 +11,16 @@ const FindDoctors = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const url = searchQuery ? `http://localhost:8081/api/v1/doctors?search=${searchQuery}` : `http://localhost:8081/api/v1/doctors`;
-        const response = await fetch(url);
-        const json = await response.json();
+        const url = searchQuery ? `/doctors?search=${searchQuery}` : `/doctors`;
+        const response = await api.get(url);
         
-        if (json.success) {
-          setDoctors(json.data);
+        if (response.data && response.data.success) {
+          setDoctors(response.data.data);
         } else {
-          setError(json.message);
+          setError(response.data.message || "Failed to fetch doctors");
         }
       } catch (err) {
-        setError("Failed to fetch doctors");
+        setError(err.response?.data?.error || "Failed to fetch doctors");
       } finally {
         setLoading(false);
       }

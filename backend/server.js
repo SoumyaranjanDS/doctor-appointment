@@ -10,6 +10,11 @@ const app = express();
 
 // Middlewares
 app.use(cors());
+
+// Webhook routes must be mounted before express.json() because Stripe needs the raw body
+const webhookRoutes = require('./src/routes/webhookRoutes');
+app.use('/api/webhooks', webhookRoutes);
+
 app.use(express.json());
 
 // Auth routes
@@ -20,18 +25,18 @@ app.use('/api/auth', authRoutes);
 const doctorRoutes = require('./src/routes/doctorRoutes');
 const onboardingRoutes = require('./src/routes/onboardingRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
-const adminAuthRoutes = require('./src/routes/adminAuthRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
+const appointmentRoutes = require('./src/routes/appointmentRoutes');
 
 // Routes configuration
 
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/onboarding', onboardingRoutes);
-app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'API is running' });

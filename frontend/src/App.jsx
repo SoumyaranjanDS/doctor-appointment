@@ -13,7 +13,8 @@ import IndividualDoctorForm from './pages/onboarding/IndividualDoctorForm';
 import ClinicForm from './pages/onboarding/ClinicForm';
 import ClinicDoctorForm from './pages/onboarding/ClinicDoctorForm';
 import CustomAuth from './pages/CustomAuth';
-import AdminLogin from './pages/admin/AdminLogin';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import CheckoutCancel from './pages/CheckoutCancel';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -37,9 +38,11 @@ function App() {
               <Dashboard />
             </PrivateRoute>
           } />
-          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/auth" element={<CustomAuth />} />
+          
+          <Route path="/checkout-success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
+          <Route path="/checkout-cancel" element={<PrivateRoute><CheckoutCancel /></PrivateRoute>} />
           
           <Route path="/onboarding" element={
             <PrivateRoute>

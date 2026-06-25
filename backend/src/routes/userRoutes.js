@@ -5,14 +5,18 @@ const { requireUser } = require('../middlewares/authMiddleware');
 router.get('/profile', requireUser, async (req, res) => {
   try {
     let isProfileCompleted = false;
+    let approvalStatus = 'approved';
+
     if (req.user.role === 'doctor') {
       const Doctor = require('../models/Doctor');
-      const doctor = await Doctor.findOne({ user: req.user._id });
+      const doctor = await Doctor.findOne({ userId: req.user._id });
       isProfileCompleted = !!doctor;
+      if (doctor) approvalStatus = doctor.approvalStatus;
     } else if (req.user.role === 'clinic') {
       const Clinic = require('../models/Clinic');
-      const clinic = await Clinic.findOne({ user: req.user._id });
+      const clinic = await Clinic.findOne({ ownerId: req.user._id });
       isProfileCompleted = !!clinic;
+      if (clinic) approvalStatus = clinic.approvalStatus;
     } else {
       isProfileCompleted = true; // patient is inherently complete
     }
@@ -25,7 +29,8 @@ router.get('/profile', requireUser, async (req, res) => {
       lastName: req.user.lastName,
       role: req.user.role,
       profileImageUrl: req.user.profileImageUrl,
-      isProfileCompleted
+      isProfileCompleted,
+      approvalStatus
     });
   } catch (error) {
     console.error('Profile fetch error:', error);

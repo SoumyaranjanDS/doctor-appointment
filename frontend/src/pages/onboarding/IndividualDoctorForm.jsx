@@ -54,7 +54,7 @@ const IndividualDoctorForm = () => {
     setError('');
 
     try {
-      const token = await getToken();
+      // Removed getToken
       
       const data = new FormData();
       data.append('name', formData.name);

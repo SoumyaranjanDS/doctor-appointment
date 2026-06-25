@@ -547,9 +547,9 @@ const Home = () => {
                       </div>
 
                       <div className="grid grid-cols-7 gap-2 mb-6">
-                        {["S", "M", "T", "W", "T", "F", "S"].map((d) => (
+                        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
                           <div
-                            key={d}
+                            key={i}
                             className="text-center text-caption text-outline"
                           >
                             {d}

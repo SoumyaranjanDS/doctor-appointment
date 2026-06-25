@@ -9,7 +9,14 @@ const Dashboard = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [isProfileCompleted, setIsProfileCompleted] = useState(true);
+  const [approvalStatus, setApprovalStatus] = useState('approved');
   const [stats, setStats] = useState({ upcoming: 0, completed: 0, total: 0 });
+  
+  // Appointments state
+  const [appointments, setAppointments] = useState([]);
+  const [revenue, setRevenue] = useState(0);
+  const [loadingAction, setLoadingAction] = useState(null);
+
   const menuRef = useRef(null);
 
   // Close user menu on click outside
@@ -23,7 +30,7 @@ const Dashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Check role logic
+  // Fetch Dashboard Data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -32,48 +39,117 @@ const Dashboard = () => {
 
         try {
           const res = await api.get('/user/profile');
-            backendRole = res.data.role;
-            isCompleted = res.data.isProfileCompleted;
-            setUserRole(backendRole);
-            setIsProfileCompleted(isCompleted);
-          } catch (err) {
-            console.error('Failed to fetch user profile:', err);
-            if (err.response?.status === 404) {
-              // Webhook hasn't completed yet, fallback to JWT role
-              backendRole = user?.role || 'patient';
-              isCompleted = false;
-              setUserRole(backendRole);
-              setIsProfileCompleted(false);
-            } else {
-              return; // Stop execution on 500s
-            }
-          }
-
-          if (backendRole === 'admin') {
-            navigate('/admin/dashboard');
-            return;
-          }
-
-          // Automatic redirect to onboarding if profile is incomplete
-          if ((backendRole === 'doctor' || backendRole === 'clinic') && !isCompleted) {
-            navigate(`/onboarding/${backendRole}`);
-            return;
-          }
-
-          // Fetch dashboard stats
-          try {
-            const statsRes = await api.get('/dashboard/stats');
-            setStats(statsRes.data);
-          } catch (e) {
-            console.error('Failed to fetch stats', e);
-          }
+          backendRole = res.data.role;
+          isCompleted = res.data.isProfileCompleted;
+          setUserRole(backendRole);
+          setIsProfileCompleted(isCompleted);
+          setApprovalStatus(res.data.approvalStatus || 'approved');
         } catch (err) {
-          console.error('Outer error:', err);
+          console.error('Failed to fetch user profile:', err);
+          if (err.response?.status === 404) {
+            backendRole = user?.role || 'patient';
+            setUserRole(backendRole);
+            setIsProfileCompleted(false);
+          } else {
+            return;
+          }
         }
+
+        if (backendRole === 'admin') {
+          navigate('/admin/dashboard');
+          return;
+        }
+
+        if ((backendRole === 'doctor' || backendRole === 'clinic') && !isCompleted) {
+          navigate(`/onboarding/${backendRole}`);
+          return;
+        }
+
+        if (isCompleted || backendRole === 'patient') {
+          fetchAppointments(backendRole);
+        }
+
+      } catch (err) {
+        console.error('Outer error:', err);
+      }
     };
 
     fetchUserData();
   }, [navigate, user]);
+
+  const fetchAppointments = async (role) => {
+    try {
+      if (role === 'patient') {
+        const res = await api.get('/appointments/patient');
+        setAppointments(res.data);
+      } else if (role === 'doctor' || role === 'clinic') {
+        const res = await api.get('/appointments/doctor');
+        setAppointments(res.data.appointments || []);
+        setRevenue(res.data.totalRevenue || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch appointments:', err);
+    }
+  };
+
+  const handleCheckout = async (appointmentId) => {
+    setLoadingAction(appointmentId);
+    try {
+      const res = await api.post(`/appointments/${appointmentId}/checkout`);
+      window.location.href = res.data.url; // Redirect to Stripe
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to initiate checkout');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleStatusUpdate = async (appointmentId, newStatus) => {
+    setLoadingAction(appointmentId);
+    try {
+      await api.put(`/appointments/${appointmentId}/status`, { status: newStatus });
+      fetchAppointments(userRole);
+    } catch (err) {
+      alert('Failed to update status');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  if (approvalStatus === 'pending') {
+    return (
+      <div className="min-h-screen bg-surface-container flex flex-col items-center justify-center p-6">
+        <div className="lg:max-w-2xl w-full bg-white rounded-3xl p-8 text-center shadow-lg border border-outline-variant/30">
+          <div className="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-3xl">hourglass_empty</span>
+          </div>
+          <h2 className="text-headline-md font-headline-md text-on-surface mb-2">Approval Pending</h2>
+          <p className="text-body-lg text-on-surface-variant mb-6">
+            Your application is under review by administration.
+          </p>
+          <button onClick={logout} className="w-full py-3 bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant/30 transition-colors">
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (approvalStatus === 'rejected') {
+    return (
+      <div className="min-h-screen bg-surface-container flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 text-center shadow-lg border border-outline-variant/30">
+          <div className="w-16 h-16 bg-error-container text-on-error-container rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-3xl">cancel</span>
+          </div>
+          <h2 className="text-headline-md font-headline-md text-on-surface mb-2">Application Rejected</h2>
+          <button onClick={logout} className="w-full py-3 bg-surface-variant text-on-surface-variant rounded-full hover:bg-outline-variant/30 transition-colors">
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="font-body-md text-body-md bg-background text-on-background flex h-screen overflow-hidden">
@@ -86,21 +162,13 @@ const Dashboard = () => {
           </Link>
         </div>
         <div className="flex flex-col h-full py-8 space-y-4 flex-grow overflow-y-auto">
-          <Link className="flex items-center gap-3 bg-primary text-on-primary rounded-full px-4 py-3 mx-2 font-label-md text-label-md shadow-4 transform hover:scale-105 transition-all" to="/dashboard">
+          <Link className="flex items-center gap-3 bg-primary text-on-primary rounded-full px-4 py-3 mx-2 font-label-md text-label-md shadow-4" to="/dashboard">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
             Dashboard
           </Link>
-          <Link className="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-low rounded-full px-4 py-3 mx-2 hover:bg-primary-container/20 transition-all font-label-md text-label-md" to="/appointments">
+          <Link className="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-low rounded-full px-4 py-3 mx-2 transition-all font-label-md text-label-md" to="/dashboard">
             <span className="material-symbols-outlined">calendar_month</span>
             Appointments
-          </Link>
-          <Link className="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-low rounded-full px-4 py-3 mx-2 hover:bg-primary-container/20 transition-all font-label-md text-label-md" to="/messages">
-            <span className="material-symbols-outlined">chat</span>
-            Messages
-          </Link>
-          <Link className="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-low rounded-full px-4 py-3 mx-2 hover:bg-primary-container/20 transition-all font-label-md text-label-md" to="/records">
-            <span className="material-symbols-outlined">folder_shared</span>
-            Medical Records
           </Link>
         </div>
       </nav>
@@ -110,23 +178,13 @@ const Dashboard = () => {
         {/* TopAppBar */}
         <header className="full-width sticky top-0 z-40 bg-transparent flex justify-between items-center w-full px-gutter py-4 bg-surface/50 dark:bg-surface-dim/50 backdrop-blur-4">
           <div className="flex items-center gap-4">
-            <button className="md:hidden text-primary dark:text-inverse-primary hover:bg-surface-variant/50 rounded-full p-2 cursor-pointer">
-              <span className="material-symbols-outlined">menu</span>
-            </button>
             <h2 className="font-headline-md text-headline-md text-primary dark:text-inverse-primary hidden md:block">Dashboard</h2>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center bg-surface-container-low rounded-full px-4 py-2 w-64 border border-outline-variant focus-within:border-primary focus-within:shadow-[0_0_10px_rgba(0,71,127,0.2)] transition-all">
-              <span className="material-symbols-outlined text-on-surface-variant mr-2">search</span>
-              <input className="bg-transparent border-none focus:ring-0 text-body-md w-full text-on-surface" placeholder="Search..." type="text"/>
-            </div>
-            <button className="text-primary dark:text-inverse-primary hover:bg-surface-variant/50 rounded-full p-2 transition-all cursor-pointer">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
             <div className="relative" ref={menuRef}>
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary cursor-pointer hover:opacity-80 transition-opacity focus:outline-none bg-surface-container-high flex items-center justify-center"
+                className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary bg-surface-container-high flex items-center justify-center cursor-pointer"
               >
                 {user?.imageUrl ? (
                   <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -136,41 +194,9 @@ const Dashboard = () => {
               </button>
               
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-4 py-3 border-b border-outline-variant/30 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0">
-                      {user?.imageUrl ? (
-                        <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-surface-container-high flex items-center justify-center">
-                          <span className="material-symbols-outlined text-on-surface-variant">person</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="font-label-md text-sm text-on-surface font-semibold truncate">{user?.firstName ? `${user.firstName} ${user.lastName}` : 'User'}</p>
-                      <p className="font-caption text-xs text-on-surface-variant truncate mt-0.5">{user?.email}</p>
-                    </div>
-                  </div>
-                  
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-md border py-2 z-50">
                   <div className="py-2">
-                    <button 
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        // Open profile settings...
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors text-left"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">settings</span> Manage account
-                    </button>
-                    
-                    <button 
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors cursor-pointer text-left"
-                    >
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container-low text-left cursor-pointer">
                       <span className="material-symbols-outlined text-[20px]">logout</span> Sign out
                     </button>
                   </div>
@@ -181,79 +207,117 @@ const Dashboard = () => {
         </header>
 
         {/* Scrollable Canvas */}
-        <main className="flex-1 overflow-y-auto px-5 md:px-10 py-8 space-y-section-gap">
+        <main className="flex-1 overflow-y-auto px-5 md:px-10 py-8 space-y-8">
           <section>
             <h1 className="font-display-lg text-headline-lg font-bold text-on-surface">Welcome back, {user?.firstName || 'User'}!</h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">Here is your health overview for today.</p>
+            <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">Here is your dashboard overview.</p>
           </section>
 
           {/* Profile Completion Prompt */}
           {userRole && userRole !== 'patient' && !isProfileCompleted ? (
-            <section className="bg-primary-container text-on-primary-container rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm border border-primary/20 mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
-                  <span className="material-symbols-outlined text-[24px]">verified</span>
-                </div>
-                <div>
-                  <h3 className="font-headline-md text-headline-md font-bold">Complete your {userRole} profile to earn</h3>
-                  <p className="font-body-md text-body-md mt-1 opacity-90">You are registered as a {userRole}. Please complete onboarding to start receiving appointments.</p>
-                </div>
-              </div>
-              <Link to={`/onboarding/${userRole}`} className="bg-primary hover:bg-primary/90 text-white font-label-md px-6 py-3 rounded-full shadow-md transition-all whitespace-nowrap">
-                Complete {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Profile
-              </Link>
+            <section className="bg-primary-container text-on-primary-container rounded-2xl p-6 shadow-sm mb-6">
+              <h3 className="font-headline-md font-bold mb-2">Complete your {userRole} profile</h3>
+              <p className="mb-4">You are registered as a {userRole}. Please complete onboarding to start receiving appointments.</p>
+              <Link to={`/onboarding/${userRole}`} className="bg-primary text-white px-6 py-2 rounded-full shadow-md">Complete Profile</Link>
             </section>
           ) : (
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Next Appointment Hero Card */}
-              <div className="lg:col-span-2 glass-card rounded-10 p-8 relative overflow-hidden flex flex-col justify-center items-center text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
-                  <span className="material-symbols-outlined text-[32px]">{userRole === 'patient' ? 'event_available' : 'event_note'}</span>
+            <>
+              {/* Stats & Revenue Section */}
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 glass-card rounded-10 p-8 flex flex-col justify-center items-center text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+                    <span className="material-symbols-outlined text-[32px]">{userRole === 'patient' ? 'event_available' : 'account_balance_wallet'}</span>
+                  </div>
+                  {userRole === 'patient' ? (
+                    <>
+                      <h3 className="font-headline-lg text-on-surface mb-2">Ready to book?</h3>
+                      <Link to="/find-doctors" className="bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-full cursor-pointer inline-block mt-4">
+                        Find a Doctor
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-headline-lg text-on-surface mb-2">Total Revenue</h3>
+                      <p className="text-display-md text-primary font-bold">${revenue}</p>
+                    </>
+                  )}
                 </div>
-                <h3 className="font-headline-lg text-headline-lg text-on-surface mb-2">You're all caught up!</h3>
-                <p className="font-body-lg text-body-lg text-on-surface-variant mb-6">No upcoming appointments scheduled for today.</p>
-                {userRole === 'patient' ? (
-                  <button className="bg-primary text-white hover:bg-primary/90 transition-all shadow-md font-label-md text-label-md px-6 py-3 rounded-full cursor-pointer">
-                    Book an Appointment
-                  </button>
-                ) : (
-                  <button className="bg-primary text-white hover:bg-primary/90 transition-all shadow-md font-label-md text-label-md px-6 py-3 rounded-full cursor-pointer">
-                    Manage Schedule
-                  </button>
-                )}
-              </div>
 
-              {/* Stats Cards Column */}
-              <div className="flex flex-col gap-6">
-                <div className="glass-card rounded-10 p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_clock</span>
-                  </div>
-                  <div>
-                    <p className="font-label-md text-label-md text-on-surface-variant">Upcoming</p>
-                    <p className="font-headline-md text-headline-md text-on-surface">{stats.upcoming} Appointments</p>
-                  </div>
-                </div>
-                <div className="glass-card rounded-10 p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>fact_check</span>
-                  </div>
-                  <div>
-                    <p className="font-label-md text-label-md text-on-surface-variant">Completed</p>
-                    <p className="font-headline-md text-headline-md text-on-surface">{stats.completed} Visits</p>
+                <div className="flex flex-col gap-6">
+                  <div className="glass-card rounded-10 p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+                      <span className="material-symbols-outlined">calendar_clock</span>
+                    </div>
+                    <div>
+                      <p className="font-label-md text-on-surface-variant">Appointments</p>
+                      <p className="font-headline-md text-on-surface">{appointments.length} Total</p>
+                    </div>
                   </div>
                 </div>
-                <div className="glass-card rounded-10 p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+              </section>
+
+              {/* Appointments List */}
+              <section>
+                <h2 className="font-headline-md text-on-surface mb-4">Your Appointments</h2>
+                {appointments.length === 0 ? (
+                  <div className="glass-card rounded-10 p-8 text-center text-on-surface-variant">
+                    No appointments found.
                   </div>
-                  <div>
-                    <p className="font-label-md text-label-md text-on-surface-variant">Total History</p>
-                    <p className="font-headline-md text-headline-md text-on-surface">{stats.total} Records</p>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {appointments.map(app => (
+                      <div key={app._id} className="glass-card rounded-10 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-primary">
+                        <div>
+                          <p className="font-label-lg font-bold text-on-surface">
+                            {new Date(app.date).toLocaleDateString()} • {app.startTime} - {app.endTime}
+                          </p>
+                          <p className="text-on-surface-variant mt-1">
+                            {userRole === 'patient' ? `Dr. ${app.doctorId?.name}` : `Patient: ${app.patientId?.firstName} ${app.patientId?.lastName}`}
+                          </p>
+                          <div className="flex gap-2 mt-2">
+                            <span className="text-xs px-2 py-1 bg-surface-container-high rounded-full uppercase tracking-wider">{app.status}</span>
+                            <span className="text-xs px-2 py-1 bg-primary-container/20 text-primary rounded-full uppercase tracking-wider">{app.paymentStatus}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          {/* Patient Actions */}
+                          {userRole === 'patient' && app.status === 'awaiting_payment' && app.paymentStatus === 'pending' && (
+                            <button 
+                              onClick={() => handleCheckout(app._id)}
+                              disabled={loadingAction === app._id}
+                              className="bg-[#4EF27A] text-[#002108] px-6 py-2 rounded-full shadow hover:shadow-lg transition-all cursor-pointer font-bold"
+                            >
+                              {loadingAction === app._id ? 'Processing...' : `Pay $${app.amount}`}
+                            </button>
+                          )}
+
+                          {/* Doctor Actions */}
+                          {(userRole === 'doctor' || userRole === 'clinic') && app.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={() => handleStatusUpdate(app._id, 'awaiting_payment')}
+                                disabled={loadingAction === app._id}
+                                className="bg-primary text-white px-4 py-2 rounded-full hover:bg-primary/90 transition cursor-pointer"
+                              >
+                                Accept
+                              </button>
+                              <button 
+                                onClick={() => handleStatusUpdate(app._id, 'cancelled')}
+                                disabled={loadingAction === app._id}
+                                className="bg-error/10 text-error px-4 py-2 rounded-full hover:bg-error/20 transition cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
-            </section>
+                )}
+              </section>
+            </>
           )}
         </main>
       </div>

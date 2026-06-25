@@ -43,16 +43,10 @@ const requireAdmin = async (req, res, next) => {
     
     // Handle both our user JWT schema { user: { role: 'admin', id: ... } }
     // and the adminAuthRoutes schema { role: 'admin', email: ... }
-    const role = decoded.user?.role || decoded.role;
+    const role = decoded.user?.role;
     
     if (role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
-    }
-    
-    // If it's the hardcoded admin token, bypass MongoDB check
-    if (decoded.role === 'admin' && !decoded.user) {
-      req.user = { role: 'admin', email: decoded.email };
-      return next();
     }
 
     const user = await User.findById(decoded.user.id);

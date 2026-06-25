@@ -31,7 +31,7 @@ const ClinicForm = () => {
     setError('');
 
     try {
-      const token = await getToken();
+      // Removed getToken
       
       const data = new FormData();
       Object.keys(formData).forEach(key => data.append(key, formData[key]));

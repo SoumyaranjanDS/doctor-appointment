@@ -66,13 +66,32 @@ const rejectApplication = async (req, res) => {
 
     res.status(400).json({ error: 'Invalid application type' });
   } catch (error) {
-    console.error('Reject Application Error:', error);
-    res.status(500).json({ error: 'Server error during rejection' });
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+// Get all appointments globally and platform revenue
+const getAppointments = async (req, res) => {
+  try {
+    const Appointment = require('../models/Appointment');
+    const appointments = await Appointment.find({})
+      .populate('patientId', 'firstName lastName email')
+      .populate('doctorId', 'name email specialities')
+      .sort({ date: -1, startTime: -1 });
+
+    const platformRevenue = appointments
+      .filter(app => app.paymentStatus === 'paid')
+      .reduce((sum, app) => sum + app.amount, 0);
+
+    res.json({ appointments, platformRevenue });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
 module.exports = {
   getApplications,
   approveApplication,
-  rejectApplication
+  rejectApplication,
+  getAppointments
 };

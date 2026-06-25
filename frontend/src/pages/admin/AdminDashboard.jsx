@@ -1,32 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const [applications, setApplications] = useState({
     individualDoctors: [],
     clinics: [],
     clinicDoctors: []
   });
+  const [appointmentsData, setAppointmentsData] = useState({
+    appointments: [],
+    platformRevenue: 0
+  });
   const [activeTab, setActiveTab] = useState('individualDoctors');
   const [loading, setLoading] = useState(true);
 
-  const fetchApplications = async () => {
+  const fetchData = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        navigate('/admin/login');
-        return;
-      }
-      const res = await api.get('/admin/applications', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setApplications(res.data);
+      const [appsRes, apptsRes] = await Promise.all([
+        api.get('/admin/applications'),
+        api.get('/admin/appointments')
+      ]);
+      setApplications(appsRes.data);
+      setAppointmentsData(apptsRes.data);
     } catch (err) {
-      console.error('Failed to fetch applications', err);
+      console.error('Failed to fetch admin data', err);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        navigate('/admin/login');
+        logout();
       }
     } finally {
       setLoading(false);
@@ -34,16 +37,13 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchApplications();
+    fetchData();
   }, []);
 
   const handleAction = async (type, id, action, reason = '') => {
     try {
-      const token = localStorage.getItem('adminToken');
-      await api.put(`/admin/applications/${type}/${id}/${action}`, { reason }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchApplications(); // Refresh list
+      await api.put(`/admin/applications/${type}/${id}/${action}`, { reason });
+      fetchData(); // Refresh list
     } catch (err) {
       alert(`Failed to ${action} application`);
     }
@@ -101,8 +101,7 @@ const AdminDashboard = () => {
           <h1 className="text-headline-lg font-headline-lg text-on-surface">Admin Dashboard</h1>
           <button 
             onClick={() => {
-              localStorage.removeItem('adminToken');
-              navigate('/admin/login');
+              logout();
             }}
             className="px-6 py-2 bg-error/10 text-error rounded-full font-label-md hover:bg-error/20 transition-colors"
           >
@@ -115,7 +114,8 @@ const AdminDashboard = () => {
           {[
             { id: 'individualDoctors', label: 'Individual Doctors' },
             { id: 'clinics', label: 'Clinics' },
-            { id: 'clinicDoctors', label: 'Clinic Doctors' }
+            { id: 'clinicDoctors', label: 'Clinic Doctors' },
+            { id: 'appointments', label: 'Appointments & Revenue' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -132,11 +132,48 @@ const AdminDashboard = () => {
         </div>
 
         {/* Content */}
-        <div className="max-w-3xl">
-          {applications[activeTab]?.length === 0 ? (
-            <p className="text-body-lg text-on-surface-variant">No pending applications in this queue.</p>
+        <div className="max-w-4xl">
+          {activeTab === 'appointments' ? (
+            <div>
+              <div className="bg-primary-container text-on-primary-container rounded-2xl p-8 mb-8 flex flex-col md:flex-row justify-between items-center shadow-sm">
+                <div>
+                  <h2 className="text-headline-md font-bold mb-1">Total Platform Revenue</h2>
+                  <p className="text-body-md opacity-90">Aggregated from all completed transactions</p>
+                </div>
+                <div className="text-display-md font-bold mt-4 md:mt-0">${appointmentsData.platformRevenue}</div>
+              </div>
+              
+              <h2 className="text-headline-sm font-bold mb-4">All Appointments</h2>
+              {appointmentsData.appointments.length === 0 ? (
+                <p className="text-body-lg text-on-surface-variant">No appointments have been made yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {appointmentsData.appointments.map(app => (
+                    <div key={app._id} className="bg-white rounded-2xl p-6 shadow-sm border border-outline-variant flex justify-between items-center">
+                      <div>
+                        <p className="font-label-lg font-bold text-on-surface">{new Date(app.date).toLocaleDateString()} at {app.startTime}</p>
+                        <p className="text-on-surface-variant mt-1">Patient: {app.patientId?.firstName} {app.patientId?.lastName}</p>
+                        <p className="text-on-surface-variant">Doctor: Dr. {app.doctorId?.name}</p>
+                        <p className="text-primary font-bold mt-2">Amount: ${app.amount}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs px-3 py-1 bg-surface-container-high rounded-full uppercase tracking-wider mb-2 inline-block">{app.status}</p>
+                        <br/>
+                        <p className={`text-xs px-3 py-1 rounded-full uppercase tracking-wider inline-block ${app.paymentStatus === 'paid' ? 'bg-[#4EF27A]/20 text-[#002108]' : 'bg-surface-variant text-on-surface-variant'}`}>
+                          Payment: {app.paymentStatus}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
-            applications[activeTab]?.map(item => renderCard(item, activeTab === 'clinics' ? 'clinic' : 'doctor'))
+            applications[activeTab]?.length === 0 ? (
+              <p className="text-body-lg text-on-surface-variant">No pending applications in this queue.</p>
+            ) : (
+              applications[activeTab]?.map(item => renderCard(item, activeTab === 'clinics' ? 'clinic' : 'doctor'))
+            )
           )}
         </div>
       </div>
