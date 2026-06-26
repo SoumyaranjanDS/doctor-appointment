@@ -32,10 +32,45 @@ const approveApplication = async (req, res) => {
       const doctor = await Doctor.findByIdAndUpdate(id, { approvalStatus: 'approved' }, { new: true });
       if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
 
-      // If they are an individual doctor, you might want to update their User role to 'doctor' here:
+      // If they are an individual doctor, update their User role to 'doctor'
       if (doctor.providerType === 'individual' && doctor.userId) {
         const User = require('../models/User');
         await User.findByIdAndUpdate(doctor.userId, { role: 'doctor' });
+      } else if (doctor.providerType === 'clinic_doctor') {
+        const User = require('../models/User');
+        const bcrypt = require('bcryptjs');
+
+        // Check if email already exists
+        const existingUser = await User.findOne({ email: doctor.email });
+        if (existingUser) {
+          return res.status(400).json({ error: 'A user with this email already exists' });
+        }
+
+        // Generate 6-char alphanumeric password
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let generatedPassword = '';
+        for (let i = 0; i < 6; i++) {
+          generatedPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+        // Create User account
+        const newUser = new User({
+          email: doctor.email,
+          password: hashedPassword,
+          firstName: doctor.name,
+          role: 'doctor'
+        });
+        await newUser.save();
+
+        // Update Doctor document
+        doctor.approvalStatus = 'approved';
+        doctor.userId = newUser._id;
+        doctor.generatedPassword = generatedPassword;
+        await doctor.save();
       }
 
       return res.json({ message: 'Doctor approved successfully', data: doctor });
@@ -83,7 +118,20 @@ const getAppointments = async (req, res) => {
       .filter(app => app.paymentStatus === 'paid')
       .reduce((sum, app) => sum + app.amount, 0);
 
-    res.json({ appointments, platformRevenue });
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+
+    const revenueData = last7Days.map(date => {
+      const dayRevenue = appointments
+        .filter(app => app.paymentStatus === 'paid' && new Date(app.date).toISOString().split('T')[0] === date)
+        .reduce((sum, app) => sum + app.amount, 0);
+      return { date: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }), amount: dayRevenue };
+    });
+
+    res.json({ appointments, platformRevenue, revenueData });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }

@@ -64,7 +64,19 @@ const doctorSchema = new mongoose.Schema({
   },
   documentUrl: {
     type: String,
-    required: true // Cloudinary URL for verification document
+    required: true // Cloudinary URL for verification document (general)
+  },
+  licenseCertificate: {
+    type: String,
+    required: true
+  },
+  medicalCertificate: {
+    type: String,
+    required: true
+  },
+  proofId: {
+    type: String,
+    required: true
   },
   approvalStatus: {
     type: String,
@@ -73,6 +85,25 @@ const doctorSchema = new mongoose.Schema({
   },
   rejectionReason: {
     type: String
+  },
+  generatedPassword: {
+    type: String // Stores the system-generated password for clinic doctors so the clinic can view it
+  },
+  availableBalance: {
+    type: Number,
+    default: 0
+  },
+  totalWithdrawn: {
+    type: Number,
+    default: 0
+  },
+  averageRating: {
+    type: Number,
+    default: 0
+  },
+  totalReviews: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

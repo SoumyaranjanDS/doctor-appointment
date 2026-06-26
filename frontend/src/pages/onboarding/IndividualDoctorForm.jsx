@@ -13,6 +13,9 @@ const IndividualDoctorForm = () => {
     specialities: '',
   });
   const [document, setDocument] = useState(null);
+  const [licenseCertificate, setLicenseCertificate] = useState(null);
+  const [medicalCertificate, setMedicalCertificate] = useState(null);
+  const [proofId, setProofId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,10 +47,6 @@ const IndividualDoctorForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    setDocument(e.target.files[0]);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -68,11 +67,17 @@ const IndividualDoctorForm = () => {
       data.append('availability', JSON.stringify(availability));
       data.append('qualifications', JSON.stringify([]));
       
-      if (document) {
-        data.append('document', document);
-      } else {
-        throw new Error('Please upload a verification document');
-      }
+      if (document) data.append('document', document);
+      else throw new Error('Please upload a verification document');
+
+      if (licenseCertificate) data.append('licenseCertificate', licenseCertificate);
+      else throw new Error('Please upload a license certificate');
+
+      if (medicalCertificate) data.append('medicalCertificate', medicalCertificate);
+      else throw new Error('Please upload a medical certificate');
+
+      if (proofId) data.append('proofId', proofId);
+      else throw new Error('Please upload a proof of ID');
 
       await api.post('/onboarding/doctor', data, {
         headers: {
@@ -258,7 +263,31 @@ const IndividualDoctorForm = () => {
               <div>
                 <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Verification Document (PDF/Image)</label>
                 <input 
-                  type="file" accept="image/*,application/pdf" required onChange={handleFileChange}
+                  type="file" accept="image/*,application/pdf" required onChange={(e) => setDocument(e.target.files[0])}
+                  className="w-full px-5 py-3.5 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface text-body-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-label-sm file:bg-white file:text-on-surface hover:file:bg-surface-variant"
+                />
+              </div>
+
+              <div>
+                <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">License Certificate (PDF/Image)</label>
+                <input 
+                  type="file" accept="image/*,application/pdf" required onChange={(e) => setLicenseCertificate(e.target.files[0])}
+                  className="w-full px-5 py-3.5 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface text-body-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-label-sm file:bg-white file:text-on-surface hover:file:bg-surface-variant"
+                />
+              </div>
+
+              <div>
+                <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Medical Certificate (PDF/Image)</label>
+                <input 
+                  type="file" accept="image/*,application/pdf" required onChange={(e) => setMedicalCertificate(e.target.files[0])}
+                  className="w-full px-5 py-3.5 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface text-body-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-label-sm file:bg-white file:text-on-surface hover:file:bg-surface-variant"
+                />
+              </div>
+
+              <div>
+                <label className="block text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Proof of ID (PDF/Image)</label>
+                <input 
+                  type="file" accept="image/*,application/pdf" required onChange={(e) => setProofId(e.target.files[0])}
                   className="w-full px-5 py-3.5 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface text-body-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-label-sm file:bg-white file:text-on-surface hover:file:bg-surface-variant"
                 />
               </div>

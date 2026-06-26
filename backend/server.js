@@ -19,6 +19,7 @@ app.use('/api/webhooks', webhookRoutes);
 app.use(express.json());
 
 // Auth routes
+const reviewRoutes = require('./src/routes/reviewRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
@@ -29,6 +30,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
+const financeRoutes = require('./src/routes/financeRoutes');
 
 // Routes configuration
 
@@ -37,7 +39,13 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/notifications', require('./src/routes/notificationRoutes'));
+app.use('/api/chat', require('./src/routes/chatRoutes'));
+app.use('/api/ai', require('./src/routes/aiRoutes'));
+app.use('/api/clinics', require('./src/routes/clinicRoutes'));
 
 app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'API is running' });
@@ -56,6 +64,7 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+app.set('io', io); // Make io available in controllers
 
 // Initialize socket handlers
 const videoHandler = require('./src/socket/videoHandler');
@@ -67,3 +76,5 @@ connectDB().then(() => {
         console.log(`Server running in development mode on port ${PORT}`);
     });
 });
+
+

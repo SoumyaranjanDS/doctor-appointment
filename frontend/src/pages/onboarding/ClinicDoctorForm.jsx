@@ -39,15 +39,14 @@ const ClinicDoctorForm = () => {
   };
 
   const [document, setDocument] = useState(null);
+  const [licenseCertificate, setLicenseCertificate] = useState(null);
+  const [medicalCertificate, setMedicalCertificate] = useState(null);
+  const [proofId, setProofId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleFileChange = (e) => {
-    setDocument(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -74,11 +73,17 @@ const ClinicDoctorForm = () => {
       data.append('availability', JSON.stringify(availability));
       data.append('qualifications', JSON.stringify([]));
       
-      if (document) {
-        data.append('document', document);
-      } else {
-        throw new Error('Please upload a verification document');
-      }
+      if (document) data.append('document', document);
+      else throw new Error('Please upload a verification document');
+
+      if (licenseCertificate) data.append('licenseCertificate', licenseCertificate);
+      else throw new Error('Please upload a license certificate');
+
+      if (medicalCertificate) data.append('medicalCertificate', medicalCertificate);
+      else throw new Error('Please upload a medical certificate');
+
+      if (proofId) data.append('proofId', proofId);
+      else throw new Error('Please upload a proof of ID');
 
       await api.post(`/onboarding/clinic/${clinicId}/doctor`, data, {
         headers: {
@@ -204,7 +209,31 @@ const ClinicDoctorForm = () => {
           <div>
             <label className="block text-label-md font-label-md text-on-surface mb-2">Doctor Verification Document</label>
             <input 
-              type="file" accept="image/*,application/pdf" required onChange={handleFileChange}
+              type="file" accept="image/*,application/pdf" required onChange={(e) => setDocument(e.target.files[0])}
+              className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-label-md font-label-md text-on-surface mb-2">License Certificate</label>
+            <input 
+              type="file" accept="image/*,application/pdf" required onChange={(e) => setLicenseCertificate(e.target.files[0])}
+              className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-label-md font-label-md text-on-surface mb-2">Medical Certificate</label>
+            <input 
+              type="file" accept="image/*,application/pdf" required onChange={(e) => setMedicalCertificate(e.target.files[0])}
+              className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-label-md font-label-md text-on-surface mb-2">Proof of ID</label>
+            <input 
+              type="file" accept="image/*,application/pdf" required onChange={(e) => setProofId(e.target.files[0])}
               className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface focus:outline-none focus:border-primary"
             />
           </div>

@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../config/api';
+import DoctorReviewsList from '../components/DoctorReviewsList';
 
 const DoctorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
   
   // Booking state
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [bookedFor, setBookedFor] = useState('Myself');
+  const [reasonForVisit, setReasonForVisit] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
 
   useEffect(() => {
@@ -57,13 +61,26 @@ const DoctorProfile = () => {
           setSlots([]);
         }
       };
+      const fetchReviews = async () => {
+        try {
+          const res = await api.get(`/reviews/doctor/${doctor._id}`);
+          setReviews(res.data);
+        } catch (err) {
+          console.error('Failed to fetch reviews', err);
+        }
+      };
       fetchSlots();
+      fetchReviews();
       setSelectedSlot(null); // Reset selection on date change
     }
   }, [doctor, selectedDate]);
 
   const handleRequestAppointment = async () => {
     if (!selectedSlot) return;
+    if (!reasonForVisit.trim()) {
+      alert('Please describe your problem or reason for visit before requesting an appointment.');
+      return;
+    }
     setBookingLoading(true);
     try {
       const dateString = selectedDate.toISOString().split('T')[0];
@@ -72,7 +89,8 @@ const DoctorProfile = () => {
         date: dateString,
         startTime: selectedSlot.startTime,
         endTime: selectedSlot.endTime,
-        reasonForVisit: 'General Consultation'
+        reasonForVisit: reasonForVisit.trim(),
+        bookedFor: bookedFor
       });
       alert('Appointment requested successfully! It is now awaiting doctor approval.');
       navigate('/dashboard');
@@ -122,8 +140,8 @@ const DoctorProfile = () => {
               <div className="hidden sm:flex flex-col items-end">
                 <div className="flex items-center gap-1 bg-surface-container-high px-3 py-1.5 rounded-full">
                   <span className="material-symbols-outlined text-[#F59E0B] text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="font-label-md text-label-md text-on-surface">{doctor.rating || 'New'}</span>
-                  <span className="font-body-md text-body-md text-on-surface-variant text-2">({doctor.reviewCount || 0} reviews)</span>
+                  <span className="font-label-md text-label-md text-on-surface">{doctor.averageRating || 'New'}</span>
+                  <span className="font-body-md text-body-md text-on-surface-variant text-2">({doctor.totalReviews || 0} reviews)</span>
                 </div>
               </div>
             </div>
@@ -179,6 +197,11 @@ const DoctorProfile = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Patient Reviews Section */}
+        <div className="glass-card rounded-6 p-6 mt-6">
+          <DoctorReviewsList doctorId={doctor._id} />
         </div>
       </div>
 
@@ -243,6 +266,39 @@ const DoctorProfile = () => {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="font-label-md text-label-md text-on-surface mb-3">Who is this appointment for?</h3>
+            <select 
+              value={bookedFor === 'Myself' ? 'Myself' : 'Other'}
+              onChange={(e) => setBookedFor(e.target.value === 'Myself' ? 'Myself' : '')}
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface font-body-md outline-none focus:border-primary transition-colors mb-3"
+            >
+              <option value="Myself">Myself</option>
+              <option value="Other">Someone else</option>
+            </select>
+            {bookedFor !== 'Myself' && (
+              <input 
+                type="text" 
+                placeholder="Enter their full name" 
+                value={bookedFor}
+                onChange={(e) => setBookedFor(e.target.value)}
+                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface font-body-md outline-none focus:border-primary transition-colors animate-fade-in"
+                required
+              />
+            )}
+          </div>
+
+          <div className="mb-6">
+            <h3 className="font-label-md text-label-md text-on-surface mb-3">Describe your problem <span className="text-error">*</span></h3>
+            <textarea
+              placeholder="What are your symptoms or reason for visit? (Required)"
+              value={reasonForVisit}
+              required
+              onChange={(e) => setReasonForVisit(e.target.value)}
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-on-surface font-body-md outline-none focus:border-primary transition-colors resize-none h-24"
+            ></textarea>
           </div>
 
           <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-6 border border-outline-variant/20 mb-6">

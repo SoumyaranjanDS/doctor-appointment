@@ -8,7 +8,8 @@ const videoHandler = (io) => {
     // Register user for global notifications
     socket.on('register-user', (userId) => {
       onlineUsers.set(userId, socket.id);
-      console.log(`User ${userId} registered globally with socket ${socket.id}`);
+      socket.join(`user_${userId}`);
+      console.log(`User ${userId} registered globally with socket ${socket.id} and joined room user_${userId}`);
     });
 
     // Join a specific appointment room
@@ -67,6 +68,33 @@ const videoHandler = (io) => {
     // Call controls
     socket.on('toggle-media', (roomId, userId, mediaType, isEnabled) => {
       socket.to(roomId).emit('user-toggled-media', userId, mediaType, isEnabled);
+    });
+
+    // Chat Events
+    socket.on('join-chat', (appointmentId) => {
+      socket.join(`chat_${appointmentId}`);
+      console.log(`Socket ${socket.id} joined chat room chat_${appointmentId}`);
+    });
+
+    socket.on('send-message', async (data) => {
+      // data: { appointmentId, senderId, text }
+      try {
+        const Message = require('../models/Message');
+        const newMessage = await Message.create({
+          appointmentId: data.appointmentId,
+          senderId: data.senderId,
+          text: data.text
+        });
+
+        // Populate sender info for the client
+        const populatedMessage = await Message.findById(newMessage._id)
+          .populate('senderId', 'firstName lastName profileImageUrl');
+
+        // Broadcast to everyone in the chat room
+        io.to(`chat_${data.appointmentId}`).emit('receive-message', populatedMessage);
+      } catch (err) {
+        console.error('Error handling send-message:', err);
+      }
     });
   });
 };

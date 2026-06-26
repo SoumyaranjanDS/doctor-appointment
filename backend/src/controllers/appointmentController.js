@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { sendNotification } = require('../utils/notificationService');
 
 // Helper to get day of week from date string (YYYY-MM-DD)
 const getDayOfWeek = (dateString) => {
@@ -60,7 +61,7 @@ exports.getAvailableSlots = async (req, res) => {
 // 2. Patient requests an appointment
 exports.requestAppointment = async (req, res) => {
   try {
-    const { doctorId, date, startTime, endTime, reasonForVisit } = req.body;
+    const { doctorId, date, startTime, endTime, reasonForVisit, bookedFor } = req.body;
     const patientId = req.user.id; // From auth middleware
 
     const doctor = await Doctor.findById(doctorId);
@@ -91,12 +92,34 @@ exports.requestAppointment = async (req, res) => {
       startTime,
       endTime,
       reasonForVisit,
+      bookedFor: bookedFor || 'Myself',
       amount: doctor.consultationFee,
       status: 'pending',
       paymentStatus: 'pending'
     });
 
     await appointment.save();
+
+    // Send Notification to Doctor or Clinic Owner
+    let targetUserId = doctor.userId;
+    if (doctor.providerType === 'clinic_doctor' && doctor.clinicId) {
+      const Clinic = require('../models/Clinic');
+      const clinic = await Clinic.findById(doctor.clinicId);
+      if (clinic) targetUserId = clinic.ownerId;
+    }
+    
+    if (targetUserId) {
+      await sendNotification({
+        io: req.app.get('io'),
+        userId: targetUserId,
+        title: 'New Appointment Request',
+        message: `You have a new appointment request on ${date.split('T')[0]} at ${startTime}.`,
+        type: 'new_appointment',
+        relatedId: appointment._id,
+        sendEmail: true
+      });
+    }
+
     res.status(201).json(appointment);
   } catch (err) {
     console.error('Error requesting appointment:', err);
@@ -111,7 +134,7 @@ exports.updateAppointmentStatus = async (req, res) => {
     const { status } = req.body; // 'awaiting_payment' or 'cancelled'
     const userId = req.user.id;
 
-    if (!['awaiting_payment', 'cancelled', 'completed', 'no-show', 'pending_completion'].includes(status)) {
+    if (!['awaiting_payment', 'confirmed', 'cancelled', 'completed', 'no-show', 'pending_completion'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status update' });
     }
 
@@ -128,8 +151,86 @@ exports.updateAppointmentStatus = async (req, res) => {
       if (!isDoctor) return res.status(403).json({ error: 'Only the doctor can change status' });
     }
 
+    // Fund distribution on completion
+    if (status === 'completed' && appointment.paymentStatus === 'paid' && appointment.status !== 'completed') {
+      const platformFee = appointment.amount * 0.05;
+      const providerEarnings = appointment.amount - platformFee;
+
+      const Clinic = require('../models/Clinic');
+      const doc = await Doctor.findById(appointment.doctorId);
+      
+      if (doc) {
+        if (doc.providerType === 'clinic_doctor' && doc.clinicId) {
+          await Clinic.findByIdAndUpdate(doc.clinicId, {
+            $inc: { availableBalance: providerEarnings }
+          });
+        } else {
+          await Doctor.findByIdAndUpdate(doc._id, {
+            $inc: { availableBalance: providerEarnings }
+          });
+        }
+      }
+    }
+
+    if (status === 'confirmed' && appointment.paymentStatus === 'pending') {
+      appointment.paymentStatus = 'paid_at_clinic';
+    }
+
     appointment.status = status;
     await appointment.save();
+
+    // Notification Logic
+    let title = 'Appointment Update';
+    let message = `Your appointment status has been updated to ${status}.`;
+    let sendToPatient = isDoctor;
+    
+    if (status === 'awaiting_payment') {
+      title = 'Appointment Accepted';
+      message = `Your appointment has been accepted. Please complete the online payment to confirm.`;
+    } else if (status === 'confirmed') {
+      title = 'Appointment Confirmed';
+      message = `Your appointment has been confirmed.`;
+    } else if (status === 'cancelled') {
+      title = 'Appointment Cancelled';
+      message = `Your appointment was cancelled.`;
+    } else if (status === 'pending_completion') {
+      title = 'Completion Approval Needed';
+      message = `The doctor requested to mark this appointment as completed. Please approve it from your dashboard.`;
+    } else if (status === 'completed' && isPatient) {
+      title = 'Appointment Completed';
+      message = `The patient has approved the completion of the appointment.`;
+      sendToPatient = false;
+    }
+
+    if (sendToPatient) {
+      await sendNotification({
+        io: req.app.get('io'),
+        userId: appointment.patientId,
+        title,
+        message,
+        type: 'appointment_update',
+        relatedId: appointment._id,
+        sendEmail: status !== 'pending_completion'
+      });
+    } else if (isPatient && status === 'completed') {
+      let docUserId = appointment.doctorId.userId;
+      if (appointment.doctorId.providerType === 'clinic_doctor' && appointment.doctorId.clinicId) {
+        const Clinic = require('../models/Clinic');
+        const clinic = await Clinic.findById(appointment.doctorId.clinicId);
+        if (clinic) docUserId = clinic.ownerId;
+      }
+      if (docUserId) {
+        await sendNotification({
+          io: req.app.get('io'),
+          userId: docUserId,
+          title,
+          message,
+          type: 'appointment_update',
+          relatedId: appointment._id,
+          sendEmail: false
+        });
+      }
+    }
 
     res.json(appointment);
   } catch (err) {
@@ -194,8 +295,12 @@ exports.getDoctorAppointments = async (req, res) => {
     }
 
     const appointments = await Appointment.find({ doctorId: doctor._id })
-      .populate('patientId', 'firstName lastName email imageUrl')
+      .populate('patientId', 'firstName lastName email imageUrl medicalRecords')
       .sort({ date: 1, startTime: 1 });
+
+    if (doctor.providerType === 'clinic_doctor') {
+      return res.json({ appointments, hideRevenue: true, totalRevenue: 0, pendingRevenue: 0, availableBalance: 0, totalWithdrawn: 0 });
+    }
 
     const completedRevenue = appointments
       .filter(app => app.status === 'completed' && app.paymentStatus === 'paid')
@@ -205,9 +310,41 @@ exports.getDoctorAppointments = async (req, res) => {
       .filter(app => app.status !== 'completed' && app.paymentStatus === 'paid')
       .reduce((sum, app) => sum + app.amount, 0);
 
-    res.json({ appointments, totalRevenue: completedRevenue, pendingRevenue });
+    res.json({ 
+      appointments, 
+      hideRevenue: false,
+      totalRevenue: completedRevenue, 
+      pendingRevenue,
+      availableBalance: doctor.availableBalance || 0,
+      totalWithdrawn: doctor.totalWithdrawn || 0
+    });
   } catch (err) {
     console.error('Error fetching doctor appointments:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 5b. Get clinic appointments
+exports.getClinicAppointments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const Clinic = require('../models/Clinic');
+    const clinic = await Clinic.findOne({ ownerId: userId });
+    
+    if (!clinic) {
+      return res.status(404).json({ error: 'Clinic profile not found' });
+    }
+
+    const appointments = await Appointment.find({ clinicId: clinic._id })
+      .populate('patientId', 'firstName lastName email imageUrl medicalRecords')
+      .populate('doctorId', 'name')
+      .sort({ date: 1, startTime: 1 });
+
+    // The stats (revenue, etc) are already fetched via /dashboard/stats
+    // We just return the appointments array here.
+    res.json({ appointments });
+  } catch (err) {
+    console.error('Error fetching clinic appointments:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -233,6 +370,24 @@ exports.verifyPayment = async (req, res) => {
       appointment.status = 'confirmed';
 
       await appointment.save();
+
+      const { sendNotification } = require('../utils/notificationService');
+      await sendNotification({
+        io: req.app.get('io'),
+        userId: appointment.patientId._id,
+        title: 'Appointment Confirmed & Paid',
+        message: `Your payment for the appointment with Dr. ${appointment.doctorId.name} was successful.`,
+        type: 'appointment_update',
+        relatedId: appointment._id,
+        sendEmail: true,
+        appointmentDetails: {
+          date: appointment.date,
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          doctorName: appointment.doctorId.name,
+          patientName: `${appointment.patientId.firstName} ${appointment.patientId.lastName}`
+        }
+      });
     }
 
     res.json(appointment);
@@ -247,7 +402,7 @@ exports.getAppointmentById = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id)
       .populate('doctorId')
-      .populate('patientId', 'name email');
+      .populate('patientId', 'name email medicalRecords');
     if (!appointment) return res.status(404).json({ error: "Appointment not found" });
     res.json(appointment);
   } catch (err) {

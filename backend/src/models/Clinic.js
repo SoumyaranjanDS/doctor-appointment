@@ -23,7 +23,7 @@ const clinicSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  zipCode: {
+  pinCode: {
     type: String,
     required: true
   },
@@ -35,6 +35,18 @@ const clinicSchema = new mongoose.Schema({
     type: String,
     required: true // Cloudinary URL for verification document
   },
+  clinicLicense: {
+    type: String,
+    required: true // Cloudinary URL for clinic license
+  },
+  adminIdProof: {
+    type: String,
+    required: true // Cloudinary URL for admin ID proof
+  },
+  location: {
+    lat: { type: Number },
+    lng: { type: Number }
+  },
   approvalStatus: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
@@ -42,6 +54,14 @@ const clinicSchema = new mongoose.Schema({
   },
   rejectionReason: {
     type: String
+  },
+  availableBalance: {
+    type: Number,
+    default: 0
+  },
+  totalWithdrawn: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

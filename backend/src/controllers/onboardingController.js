@@ -15,8 +15,8 @@ const registerIndividualDoctor = async (req, res) => {
       bio
     } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Verification document is required' });
+    if (!req.files || !req.files.document || !req.files.licenseCertificate || !req.files.medicalCertificate || !req.files.proofId) {
+      return res.status(400).json({ error: 'All verification documents are required' });
     }
 
     // Check if user already has an application pending or approved
@@ -25,8 +25,11 @@ const registerIndividualDoctor = async (req, res) => {
       return res.status(400).json({ error: 'You have already submitted a doctor application' });
     }
 
-    // Upload document to Cloudinary
-    const cloudinaryResponse = await uploadToCloudinary(req.file.buffer, 'doctor-appointments/doctors');
+    // Upload documents to Cloudinary
+    const docUpload = await uploadToCloudinary(req.files.document[0].buffer, 'doctor-appointments/doctors');
+    const licenseUpload = await uploadToCloudinary(req.files.licenseCertificate[0].buffer, 'doctor-appointments/doctors');
+    const medCertUpload = await uploadToCloudinary(req.files.medicalCertificate[0].buffer, 'doctor-appointments/doctors');
+    const proofIdUpload = await uploadToCloudinary(req.files.proofId[0].buffer, 'doctor-appointments/doctors');
 
     // Parse JSON fields from formData if necessary
     const parsedSpecialities = typeof specialities === 'string' ? JSON.parse(specialities) : specialities;
@@ -44,7 +47,10 @@ const registerIndividualDoctor = async (req, res) => {
       consultationFee: Number(consultationFee),
       availability: parsedAvailability,
       bio,
-      documentUrl: cloudinaryResponse.secure_url,
+      documentUrl: docUpload.secure_url,
+      licenseCertificate: licenseUpload.secure_url,
+      medicalCertificate: medCertUpload.secure_url,
+      proofId: proofIdUpload.secure_url,
       approvalStatus: 'pending'
     });
 
@@ -60,10 +66,10 @@ const registerIndividualDoctor = async (req, res) => {
 // Register Clinic
 const registerClinic = async (req, res) => {
   try {
-    const { name, address, city, state, zipCode, phone } = req.body;
+    const { name, address, city, state, pinCode, phone, lat, lng } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Verification document is required' });
+    if (!req.files || !req.files.document || !req.files.clinicLicense || !req.files.adminIdProof) {
+      return res.status(400).json({ error: 'All verification documents are required' });
     }
 
     // Check if user already owns a clinic application
@@ -72,7 +78,9 @@ const registerClinic = async (req, res) => {
       return res.status(400).json({ error: 'You have already submitted a clinic application' });
     }
 
-    const cloudinaryResponse = await uploadToCloudinary(req.file.buffer, 'doctor-appointments/clinics');
+    const docUpload = await uploadToCloudinary(req.files.document[0].buffer, 'doctor-appointments/clinics');
+    const clinicLicenseUpload = await uploadToCloudinary(req.files.clinicLicense[0].buffer, 'doctor-appointments/clinics');
+    const adminIdProofUpload = await uploadToCloudinary(req.files.adminIdProof[0].buffer, 'doctor-appointments/clinics');
 
     const newClinic = new Clinic({
       ownerId: req.user._id,
@@ -80,9 +88,15 @@ const registerClinic = async (req, res) => {
       address,
       city,
       state,
-      zipCode,
+      pinCode,
       phone,
-      documentUrl: cloudinaryResponse.secure_url,
+      location: {
+        lat: lat ? parseFloat(lat) : undefined,
+        lng: lng ? parseFloat(lng) : undefined
+      },
+      documentUrl: docUpload.secure_url,
+      clinicLicense: clinicLicenseUpload.secure_url,
+      adminIdProof: adminIdProofUpload.secure_url,
       approvalStatus: 'pending'
     });
 
@@ -119,12 +133,15 @@ const registerClinicDoctor = async (req, res) => {
       return res.status(403).json({ error: 'Clinic must be approved before onboarding doctors' });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ error: 'Doctor verification document is required' });
+    if (!req.files || !req.files.document || !req.files.licenseCertificate || !req.files.medicalCertificate || !req.files.proofId) {
+      return res.status(400).json({ error: 'All doctor verification documents are required' });
     }
 
     // Upload document to Cloudinary
-    const cloudinaryResponse = await uploadToCloudinary(req.file.buffer, 'doctor-appointments/clinic_doctors');
+    const docUpload = await uploadToCloudinary(req.files.document[0].buffer, 'doctor-appointments/clinic_doctors');
+    const licenseUpload = await uploadToCloudinary(req.files.licenseCertificate[0].buffer, 'doctor-appointments/clinic_doctors');
+    const medCertUpload = await uploadToCloudinary(req.files.medicalCertificate[0].buffer, 'doctor-appointments/clinic_doctors');
+    const proofIdUpload = await uploadToCloudinary(req.files.proofId[0].buffer, 'doctor-appointments/clinic_doctors');
 
     const parsedSpecialities = typeof specialities === 'string' ? JSON.parse(specialities) : specialities;
     const parsedQualifications = typeof qualifications === 'string' ? JSON.parse(qualifications) : qualifications;
@@ -142,7 +159,10 @@ const registerClinicDoctor = async (req, res) => {
       consultationFee: Number(consultationFee),
       availability: parsedAvailability, // Mandated by the clinic
       bio,
-      documentUrl: cloudinaryResponse.secure_url,
+      documentUrl: docUpload.secure_url,
+      licenseCertificate: licenseUpload.secure_url,
+      medicalCertificate: medCertUpload.secure_url,
+      proofId: proofIdUpload.secure_url,
       approvalStatus: 'pending' // Still requires admin approval
     });
 

@@ -1,7 +1,6 @@
-import React, { useState, useRef } from "react";
-
-import { Link } from "react-router-dom";
-
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../config/api";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 // --- Mock Data ---
 const trustIndicators = [
@@ -28,105 +27,6 @@ const trustIndicators = [
   {
     icon: "prescriptions",
     text: "Digital Rx",
-  },
-];
-const doctors = [
-  {
-    id: 1,
-    name: "Dr. Sarah Jenkins",
-    specialty: "Cardiologist",
-    exp: "15 Yrs Exp.",
-    rating: 4.9,
-    reviews: 120,
-    img: "/doc1.png",
-    available: "Today",
-    education: "MD, Harvard Medical School",
-  },
-  {
-    id: 2,
-    name: "Dr. Michael Chen",
-    specialty: "Dermatologist",
-    exp: "10 Yrs Exp.",
-    rating: 4.8,
-    reviews: 85,
-    img: "/doc2.png",
-    available: "Tomorrow",
-    education: "Stanford University",
-  },
-  {
-    id: 3,
-    name: "",
-    specialty: "Pediatrician",
-    exp: "8 Yrs Exp.",
-    rating: 4.9,
-    reviews: 200,
-    img: "/doc3.png",
-    available: "Next Week",
-    education: "Johns Hopkins",
-  },
-  {
-    id: 4,
-    name: "Dr. James Wilson",
-    specialty: "Neurologist",
-    exp: "20 Yrs Exp.",
-    rating: 4.7,
-    reviews: 150,
-    img: "/doc4.png",
-    available: "Today",
-    education: "UCSF Medical Center",
-  },
-  {
-    id: 5,
-    name: "Dr. Olivia Martinez",
-    specialty: "Gynecologist",
-    exp: "12 Yrs Exp.",
-    rating: 4.9,
-    reviews: 310,
-    img: "/doc5.png",
-    available: "Tomorrow",
-    education: "Yale School of Medicine",
-  },
-];
-const clinics = [
-  {
-    id: 1,
-    name: "City Health Hospital",
-    loc: "Downtown",
-    docs: 45,
-    type: "Multi-Specialty",
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    name: "Green Valley Center",
-    loc: "Westside",
-    docs: 28,
-    type: "General Care",
-    rating: 4.7,
-  },
-  {
-    id: 3,
-    name: "Sunrise Pediatrics",
-    loc: "North Hills",
-    docs: 12,
-    type: "Pediatrics",
-    rating: 4.9,
-  },
-  {
-    id: 4,
-    name: "Apex Heart Inst.",
-    loc: "City Center",
-    docs: 35,
-    type: "Cardiology",
-    rating: 4.9,
-  },
-  {
-    id: 5,
-    name: "Clear Vision Eye",
-    loc: "East Bay",
-    docs: 8,
-    type: "Ophthalmology",
-    rating: 4.6,
   },
 ];
 const reviews = [
@@ -202,6 +102,30 @@ const Home = () => {
   const [hoveredDoc, setHoveredDoc] = useState(null);
   const [hoveredClinic, setHoveredClinic] = useState(null);
   const [activeStep, setActiveStep] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const [topDoctors, setTopDoctors] = useState([]);
+  const [topClinics, setTopClinics] = useState([]);
+
+  useEffect(() => {
+    const fetchTopData = async () => {
+      try {
+        const docRes = await api.get('/doctors?limit=5');
+        if (docRes.data && docRes.data.success) {
+          setTopDoctors(docRes.data.data.slice(0, 5));
+        }
+        
+        const clinicRes = await api.get('/clinics?limit=4');
+        if (clinicRes.data && clinicRes.data.success) {
+          setTopClinics(clinicRes.data.data.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Failed to fetch top data for home", err);
+      }
+    };
+    fetchTopData();
+  }, []);
 
   const bookingSectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -278,7 +202,7 @@ const Home = () => {
             </div>
             {/* Search Strip */}
             <div className="bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-2 flex flex-col md:flex-row items-center relative z-10 w-full shadow-lg">
-              <div className="flex-1 px-4 py-3 border-b md:border-b-0 md:border-r border-outline-variant w-full md:w-auto flex items-center gap-2">
+              <div className="flex-1 px-4 py-3 border-b md:border-b-0 border-outline-variant w-full md:w-auto flex items-center gap-2">
                 <span
                   className="material-symbols-outlined text-outline"
                   data-icon="search"
@@ -288,37 +212,27 @@ const Home = () => {
 
                 <input
                   className="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md placeholder:text-outline p-0 outline-none"
-                  placeholder="Doctor or Speciality"
+                  placeholder="Describe your symptoms (e.g. headache, fever)..."
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') navigate(`/find-doctors`, { state: { initialSymptoms: searchQuery } });
+                  }}
                 />
               </div>
 
-              <div className="flex-1 px-4 py-3 border-b md:border-b-0 md:border-r border-outline-variant w-full md:w-auto flex items-center gap-2">
-                <span
-                  className="material-symbols-outlined text-outline"
-                  data-icon="location_on"
+              <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 flex-col md:flex-row px-2 md:px-0">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate(`/find-doctors`, { state: { initialSymptoms: searchQuery } })}
+                  className="bg-primary text-white hover:bg-primary-container hover:text-on-primary-container transition-colors rounded-full px-8 py-3 font-label-md text-label-md w-full md:w-auto flex items-center justify-center gap-2 shadow-md"
                 >
-                  location_on
-                </span>
-
-                <input
-                  className="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md placeholder:text-outline p-0 outline-none"
-                  placeholder="Location"
-                  type="text"
-                />
+                  <span className="material-symbols-outlined">smart_toy</span>
+                  AI Search
+                </motion.button>
               </div>
-
-              <motion.button
-                whileHover={{
-                  scale: 1.05,
-                }}
-                whileTap={{
-                  scale: 0.95,
-                }}
-                className="bg-primary-container text-white hover:bg-primary transition-colors rounded-full px-8 py-3 font-label-md text-label-md w-full md:w-auto mt-2 md:mt-0 flex items-center justify-center gap-2 shadow-md"
-              >
-                Search
-              </motion.button>
             </div>
           </motion.div>
 
@@ -718,9 +632,9 @@ const Home = () => {
         </div>
 
         <div className="space-y-2">
-          {doctors.map((doc, idx) => (
+          {topDoctors.map((doc, idx) => (
             <motion.div
-              key={doc.id}
+              key={doc._id}
               initial={{
                 opacity: 0,
                 x: -20,
@@ -736,29 +650,33 @@ const Home = () => {
                 duration: 0.3,
                 delay: idx * 0.05,
               }}
-              onMouseEnter={() => setHoveredDoc(doc.id)}
+              onMouseEnter={() => setHoveredDoc(doc._id)}
               onMouseLeave={() => setHoveredDoc(null)}
               className="relative flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-xl hover:bg-white/50 hover:backdrop-blur-md border border-transparent hover:border-white/60 transition-colors gap-4 z-10 hover:z-50"
             >
-              <div className="flex items-center gap-4 cursor-pointer">
-                <div className="w-16 h-16 rounded-full bg-surface-dim overflow-hidden shadow-sm">
-                  <img
-                    alt={doc.name}
-                    className="w-full h-full object-cover"
-                    src={doc.img}
-                  />
+              <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/doctor/${doc._id}`)}>
+                <div className="w-16 h-16 rounded-full bg-surface-dim overflow-hidden shadow-sm flex items-center justify-center text-on-surface-variant font-bold text-xl">
+                  {doc.userId?.profileImageUrl ? (
+                    <img
+                      alt={doc.userId?.firstName}
+                      className="w-full h-full object-cover"
+                      src={doc.userId?.profileImageUrl}
+                    />
+                  ) : (
+                    doc.userId?.firstName?.charAt(0) || 'D'
+                  )}
                 </div>
 
                 <div>
                   <h3 className="font-label-md text-label-md text-on-surface flex items-center gap-1">
-                    {doc.name}
+                    Dr. {doc.userId?.firstName} {doc.userId?.lastName}
                     <span className="material-symbols-outlined text-primary text-[16px] filled">
                       verified
                     </span>
                   </h3>
 
                   <p className="font-body-md text-body-md text-on-surface-variant">
-                    {doc.specialty} • {doc.exp}
+                    {doc.specialities?.[0]} • {doc.experienceYears} Yrs Exp.
                   </p>
 
                   <div className="flex items-center gap-1 mt-1">
@@ -767,24 +685,30 @@ const Home = () => {
                     </span>
 
                     <span className="font-caption text-caption text-on-surface-variant">
-                      {doc.rating} ({doc.reviews} reviews)
+                      {doc.averageRating || 'New'} ({doc.totalReviews || 0} reviews)
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto mt-4 md:mt-0">
-                <button className="flex-1 md:flex-none px-6 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                <button 
+                  onClick={() => navigate(`/doctor/${doc._id}`)}
+                  className="flex-1 md:flex-none px-6 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-surface-container-low transition-colors"
+                >
                   View Profile
                 </button>
 
-                <button className="flex-1 md:flex-none px-6 py-2 bg-primary-container text-white rounded-full font-label-md text-label-md hover:bg-primary transition-colors shadow-sm">
+                <button 
+                  onClick={() => navigate(`/doctor/${doc._id}`)}
+                  className="flex-1 md:flex-none px-6 py-2 bg-primary-container text-white rounded-full font-label-md text-label-md hover:bg-primary transition-colors shadow-sm"
+                >
                   Book
                 </button>
               </div>
               {/* Hover Modal */}
               <AnimatePresence>
-                {hoveredDoc === doc.id && (
+                {hoveredDoc === doc._id && (
                   <motion.div
                     initial={{
                       opacity: 0,
@@ -808,19 +732,25 @@ const Home = () => {
                     className="absolute z-50 top-full left-0 md:left-1/2 md:-translate-x-1/2 w-[350px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl p-6 rounded-2xl mt-2"
                   >
                     <div className="flex items-center gap-4 mb-4 border-b border-outline-variant pb-4">
-                      <img
-                        alt={doc.name}
-                        className="w-16 h-16 rounded-full object-cover shadow-sm"
-                        src={doc.img}
-                      />
+                      <div className="w-16 h-16 rounded-full bg-surface-dim overflow-hidden flex items-center justify-center font-bold text-xl text-on-surface-variant shadow-sm">
+                        {doc.userId?.profileImageUrl ? (
+                          <img
+                            alt={doc.userId?.firstName}
+                            className="w-full h-full object-cover"
+                            src={doc.userId?.profileImageUrl}
+                          />
+                        ) : (
+                          doc.userId?.firstName?.charAt(0) || 'D'
+                        )}
+                      </div>
 
                       <div>
                         <h4 className="font-label-md text-on-surface">
-                          {doc.name}
+                          Dr. {doc.userId?.firstName} {doc.userId?.lastName}
                         </h4>
 
                         <p className="text-primary text-caption font-label-md">
-                          {doc.specialty}
+                          {doc.specialities?.[0]}
                         </p>
                       </div>
                     </div>
@@ -828,18 +758,18 @@ const Home = () => {
                     <div className="space-y-3 font-body-md text-on-surface-variant">
                       <div className="flex justify-between">
                         <span className="text-on-surface">Education</span>{" "}
-                        <span>{doc.education}</span>
+                        <span>{doc.education?.[0]?.degree || 'MD'}</span>
                       </div>
 
                       <div className="flex justify-between">
                         <span className="text-on-surface">Experience</span>{" "}
-                        <span>{doc.exp}</span>
+                        <span>{doc.experienceYears} Yrs Exp.</span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-on-surface">Next Available</span>{" "}
+                        <span className="text-on-surface">Consultation Fee</span>{" "}
                         <span className="text-primary font-label-md">
-                          {doc.available}
+                          ${doc.consultationFee}
                         </span>
                       </div>
                     </div>
@@ -865,9 +795,9 @@ const Home = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {clinics.map((clinic, idx) => (
+          {topClinics.map((clinic, idx) => (
             <motion.div
-              key={clinic.id}
+              key={clinic._id}
               initial={{
                 opacity: 0,
                 scale: 0.95,
@@ -883,7 +813,7 @@ const Home = () => {
                 duration: 0.4,
                 delay: idx * 0.1,
               }}
-              onMouseEnter={() => setHoveredClinic(clinic.id)}
+              onMouseEnter={() => setHoveredClinic(clinic._id)}
               onMouseLeave={() => setHoveredClinic(null)}
               className="relative flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl hover:border-primary hover:shadow-lg transition-all gap-4 cursor-pointer z-10 hover:z-50"
             >
@@ -897,21 +827,21 @@ const Home = () => {
                     <span className="material-symbols-outlined text-[16px]">
                       location_on
                     </span>{" "}
-                    {clinic.loc}
+                    {clinic.city || clinic.address || 'City Center'}
                   </span>
 
                   <span className="flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded">
                     <span className="material-symbols-outlined text-[16px]">
                       group
                     </span>{" "}
-                    {clinic.docs} Doctors
+                    {clinic.doctorCount || 0} Doctors
                   </span>
 
                   <span className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded">
                     <span className="material-symbols-outlined text-[16px] filled">
                       star
                     </span>{" "}
-                    {clinic.rating}
+                    4.9
                   </span>
                 </div>
               </div>
@@ -921,7 +851,7 @@ const Home = () => {
               </button>
               {/* Hover Modal */}
               <AnimatePresence>
-                {hoveredClinic === clinic.id && (
+                {hoveredClinic === clinic._id && (
                   <motion.div
                     initial={{
                       opacity: 0,
@@ -945,7 +875,7 @@ const Home = () => {
                     className="absolute z-50 top-full left-1/2 -translate-x-1/2 w-72 bg-white/60 backdrop-blur-xl border border-white/60 shadow-2xl p-5 rounded-2xl mt-2"
                   >
                     <h4 className="font-label-md text-primary mb-2 border-b border-outline-variant pb-2">
-                      {clinic.type} Center
+                      Medical Center
                     </h4>
 
                     <p className="font-body-md text-on-surface-variant text-sm mb-3">
@@ -1814,7 +1744,7 @@ const Home = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex gap-4">
                     <img
-                      src={doctors[0].img}
+                      src="/doc1.png"
                       alt="Doc"
                       className="w-14 h-14 rounded-full object-cover shadow-sm hidden sm:block"
                     />

@@ -4,11 +4,17 @@ const User = require('../models/User');
 // Get all doctors with optional filtering
 const getAllDoctors = async (req, res) => {
     try {
-        const { speciality, search } = req.query;
+        const { speciality, search, minFee, maxFee } = req.query;
         let query = {};
 
         if (speciality) {
             query.specialities = { $in: [new RegExp(speciality, 'i')] };
+        }
+        
+        if (minFee || maxFee) {
+            query.consultationFee = {};
+            if (minFee) query.consultationFee.$gte = Number(minFee);
+            if (maxFee) query.consultationFee.$lte = Number(maxFee);
         }
 
         // We populate the user details (name, image) to send back with the doctor profile

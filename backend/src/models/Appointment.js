@@ -6,6 +6,11 @@ const appointmentSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  bookedFor: {
+    type: String,
+    required: false,
+    default: 'Myself'
+  },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor',
@@ -49,6 +54,32 @@ const appointmentSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true
+  },
+  prescription: {
+    type: {
+      type: String,
+      enum: ['upload', 'digital']
+    },
+    fileUrl: String,
+    digitalData: {
+      date: Date,
+      time: String,
+      doctorName: String,
+      doctorDetails: String,
+      patientName: String,
+      patientDetails: String,
+      medicines: [{
+        name: String,
+        dosage: String,
+        duration: String,
+        timeToTake: String
+      }],
+      notes: String
+    }
+  },
+  hasReviewed: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
